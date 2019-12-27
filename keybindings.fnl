@@ -4,9 +4,12 @@
 (local lume (require "vendor.lume"))
 (local input (require "utils.input"))
 (local wincmd (require "commands.window"))
+(local tagcmd (require "commands.tag"))
 (local defhydra (require "features.hydra"))
 (local output (require "utils.output"));
 (local notify output.notify)
+
+(local layouts awful.layout.suit)
 
 (local window-hydra
        (defhydra {:name "Windows 🐲" :take-counts true :key [[:mod] :w] }
@@ -30,6 +33,32 @@
                   [:space wincmd.toggle-floating "floating"]
                   [:f wincmd.toggle-fullscreen "fullscreen" {:exit true}]]))
 
+(local tag-hydra
+       (defhydra {:name "Tags 🐲" :take-counts true :key [[:mod] :t] }
+                 ["Layout"
+                  [:space (tagcmd.layout-fn layouts.floating) "floating"]
+                  [:= (tagcmd.layout-fn layouts.fair) "fair"]
+                  [:/ (tagcmd.layout-fn layouts.fair.horizontal) "fairv"]
+                  [:t (tagcmd.layout-fn layouts.tile) "tile"]
+                  [:s (tagcmd.layout-fn layouts.spiral) "spiral"]
+                  [:S (tagcmd.layout-fn layouts.spiral.dwindle) "dwindle"]
+                  [:f (tagcmd.layout-fn layouts.max) "max"]
+                  [:F (tagcmd.layout-fn layouts.max.fullscreen) "fullscreen"]
+                  [:+ (tagcmd.layout-fn layouts.magnifier) "magnifier"]]
+                 ["Spacing"
+                  [:c tagcmd.inc-cols "add column"]
+                  [:C tagcmd.dec-cols "remove column"]
+                  [:m tagcmd.inc-masters "increase masters"]
+                  [:M tagcmd.dec-masters "decrease masters"]
+                  [:j tagcmd.dec-master-width "shrink master area"]
+                  [:k tagcmd.inc-master-width "grow master area"]
+                  [:p tagcmd.toggle-fill-policy "⏼ fill policy"]
+                  [:g tagcmd.inc-gap "increase gaps"]
+                  [:G tagcmd.dec-gap "decrease gaps"]]
+                 ["Transfer"
+                  [:h (fn [] (output.notify "TODO")) "move to screen left"]
+                  [:l (fn [] (output.notify "TODO")) "move to screen right"]]))
+
 (local
  bindings
  {
@@ -47,6 +76,13 @@
     [[:mod] :space (fn [] (awful.util.spawn "rofi -show run")) "app launcher"]
     [[:mod] :Return (fn [] (awful.spawn "xterm")) "open terminal"]
     )
+
+   (input.key-group
+    "tags"
+    [[:mod :shift] :l tagcmd.go-right "switch to next tag"]
+    [[:mod :shift] :h tagcmd.go-left "switch to previous tag"]
+    )
+   tag-hydra
 
 ;   (input.key-group
 ;    "workspaces"

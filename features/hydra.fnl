@@ -122,7 +122,7 @@ each HEAD-KNOT is rendered into a named column with all heads listed."
                  :widget wibox.widget.textbox
                  :markup (head-knot-template h)
                  :align :left
-                 :valign :center
+                 :valign :top
                  )))
         grid (gears.table.join
               {:layout wibox.layout.grid
@@ -163,27 +163,31 @@ each HEAD-KNOT is rendered into a named column with all heads listed."
                 :placement style.placement
                 :shape style.shape)))
 
-(fn keypress-handler [key allowed-keys count? fn-map prop-map num-buf]
+(lambda keypress-handler [key allowed-keys count? fn-map prop-map num-buf]
   "A count-aware handler for invoking keypresses.
 
-It checks ALLOWED-KEYS for KEY, invokes KEY in FN-MAP n times based on the
-count it tracks in NUM-BUF, unless COUNT? is false, and optionally
-terminates the keygrabber if the :exit prop in PROP-MAP for KEY is true
+Check ALLOWED-KEYS for KEY, invoke KEY in FN-MAP n times based on the
+count tracked in NUM-BUF, unless COUNT? is false, and optionally
+terminate the keygrabber if the :exit prop in PROP-MAP for KEY is true
 
-RETURN the resulting state of the num-buf."
-  (let [key (match key " " "space" _ key)] ; space not sent as keysym ???
-  (if (lume.find allowed-keys key)
-      (if (and count? (lume.find [:0 :1 :2 :3 :4 :5 :6 :7 :8 :9] key))
-          (.. num-buf key)
-          (do
-            (let [number (tonumber num-buf)
-                  count (if (= nil number) 1 number)]
-              (for [i 1 count]
-                ((. fn-map key))
-                (when (. (. prop-map key) :exit)
-                  (: awful.keygrabber.current_instance :stop)))
-              "")))
-      (: awful.keygrabber.current_instance :stop))))
+RETURN the resulting state of the NUM-BUF."
+  (let [key (match key
+              " " "space" ; space not sent as keysym ???
+              _   key)] 
+    (if (lume.find allowed-keys key)
+        (if (and count? (lume.find [:0 :1 :2 :3 :4 :5 :6 :7 :8 :9] key))
+            (.. num-buf key)
+            (do
+              (let [number (tonumber num-buf)
+                    count (if (= nil number) 1 number)]
+                (for [i 1 count]
+                  ((. fn-map key))
+                  (when (. (. prop-map key) :exit)
+                    (: awful.keygrabber.current_instance :stop)))
+                "")))
+        (do
+          (: awful.keygrabber.current_instance :stop)
+          ""))))
 
 
 (fn defhydra [body ...]
