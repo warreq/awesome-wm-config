@@ -27,6 +27,8 @@
 (global keybindings (require "keybindings"))
 (global rules (require "rules"))
 (local persistence (require "features.persistence"))
+(local workspaces (require "features.workspaces"))
+(local wallpaper (require "features.wallpaper"))
 
 ;; Error handling
 ;; Check if awesome encountered an error during startup and fell back to
@@ -124,9 +126,7 @@
                       :markup ""
                       )))
 
-(awesome.connect_signal "workspace::changed"
-                        (fn [sig]
-                          (tset workspace-indicator :markup (.. "<b>" (. sig :name) "</b>"))))
+
 
 (local my-calendar
        (awful.popup (/<
@@ -181,26 +181,9 @@
         (awful.button [] 4 (fn [] (awful.client.focus.byidx 1)))
         (awful.button [] 5 (fn [] (awful.client.focus.byidx -1)))))
 
-(fn set_wallpaper [s]
-  ;; Wallpaper
-  (when beautiful.wallpaper
-    (var wallpaper beautiful.wallpaper)
-    ;; If wallpaper is a function, call it with the screen
-    (when (= (type wallpaper) "function")
-      (set wallpaper (wallpaper s)))
-    (gears.wallpaper.maximized wallpaper s true)))
+
 
 ;; Tag management
-
-(local default-ws :default)
-(var workspaces [ default-ws ])
-(var current-workspace nil)
-
-(fn change-current-workspace [workspace]
-  (set current-workspace workspace)
-  (awesome.emit_signal "workspace::changed" {:name workspace}))
-
-(change-current-workspace default-ws)
 
 (fn tag-props
   ;; generate a sequence of tag properties for a workspace
@@ -227,25 +210,7 @@
                                        (~= (. t key) value))
                              (= (. t key) value))))
 
-(fn screen-iter []
-  (var i 0)
-  (var n (: screen :count))
-  (fn []
-    (set i (+ i 1))
-    (when (<= i n)
-      (. screen i))))
 
-(fn init-workspace
-  [workspace]
-  (let [ts (tag-props workspace (range 1 1))]
-    (lume.map ts (fn [t]
-                   (each [s (screen-iter)]
-                     (var cur-t (get-or-create-tag s t))
-                     (notify (gears.debug.dump_return cur-t))
-                     (when (= s (awful.screen.focused))
-                       (: cur-t :view_only)))))
-    (table.insert workspaces workspace)
-    (change-current-workspace workspace)))
 
 ;; Table of layouts to cover with awful.layout.inc, order matters.
 (set awful.layout.layouts [
@@ -267,18 +232,13 @@
                            ;; awful.layout.suit.corner.se
                            ])
 
-;; Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
-(screen.connect_signal "property::geometry" set_wallpaper)
-
 (awful.screen.connect_for_each_screen
  (fn [s]
-   ;; Wallpaper
-   (set_wallpaper s)
-
-   (awful.tag.add "default" {:pos 1
-                             :workspace default-ws
-                             :screen s
-                             :layout (. awful.layout.layouts 1)})
+   (awful.tag.add (os.clock) {:pos 1
+                              :screen s
+                              :selected true
+                              :hide false
+                              :layout (. awful.layout.layouts 1)})
 
    ;; Create a promptbox for each screen
    (set s.mypromptbox (awful.widget.prompt))
@@ -396,3 +356,10 @@
 (client.connect_signal "unfocus" (fn [c] (set c.border_color beautiful.border_normal)))
 
 ;(persistence.enable)
+(wallpaper.enable)
+(workspaces.enable)
+
+(awesome.connect_signal "workspaces::applied"
+                        (fn [sig]
+                          (tset workspace-indicator :markup (.. "<b>" sig "</b>"))))
+(workspaces.apply)

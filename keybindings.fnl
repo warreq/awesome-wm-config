@@ -5,8 +5,9 @@
 (local input (require "utils.input"))
 (local wincmd (require "commands.window"))
 (local tagcmd (require "commands.tag"))
+(local workspacecmd (require "commands.workspace"))
 (local defhydra (require "features.hydra"))
-(local output (require "utils.output"));
+(local output (require "utils.output"))
 (local notify output.notify)
 
 (local layouts awful.layout.suit)
@@ -84,11 +85,10 @@
     )
    tag-hydra
 
-;   (input.key-group
-;    "workspaces"
-;    [[:mod] :c (fn [] (: (rofi.hist-prompt "new workspace" "workspaces")
-;                         :next (fn [res] (init-workspace res)))) "create workspace"]
-; )
+   (input.key-group
+    "workspaces"
+    [[:mod] :n workspacecmd.prompt "create workspace"]
+    )
 
    (input.key-group
     "client"

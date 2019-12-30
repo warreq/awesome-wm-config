@@ -2,13 +2,17 @@
 ;; https://github.com/davatorium/rofi
 (local awful (require "awful"))
 (local deferred (require "vendor.deferred"))
+(local lume (require "vendor.lume"))
 (local aio (require "utils.aio"))
 
 (local rofi {})
 
 (fn rofi.prompt
   [prompt input]
-  (let [cmd (string.format "printf '%s' | rofi -dmenu -p '%s'" input prompt)]
+  (let [cmd (string.format
+             "printf '%s' | rofi -dmenu -p '%s'"
+             input
+             prompt)]
     (aio.shellout cmd)))
 
 (fn rofi.hist-prompt
@@ -27,7 +31,7 @@
                    (aio.kill-line cachedir histfile res)))
         (: :next (fn [_] (aio.append-file cachedir histfile result)))
         (: :next
-           (fn [_] (: (deferred.new) :resolve result))
+           (fn [_] (: (deferred.new) :resolve (lume.trim result)))
            (fn [err] (error err))))))
 
 rofi
