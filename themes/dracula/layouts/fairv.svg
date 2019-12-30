@@ -1,0 +1,14 @@
+<svg height="32pt" preserveAspectRatio="xMidYMid meet" viewBox="0 0 22 32" width="22pt" xmlns="http://www.w3.org/2000/svg">
+  <g transform="matrix(.1 0 0 -.1 0 32)">
+    <path d="m0 160v-160h110 110v160 160h-110-110z"/>
+    <path d="m180 160v-70h-70-70v70 70h70 70z" fill="#fff"/>
+    <path d="m50 205v-15h15 15v15 15h-15-15z"/>
+    <path d="m90 205v-15h20 20v15 15h-20-20z"/>
+    <path d="m140 190v-30h15 15v30 30h-15-15z"/>
+    <path d="m50 160v-20h15 15v20 20h-15-15z"/>
+    <path d="m90 160v-20h20 20v20 20h-20-20z"/>
+    <path d="m140 125v-25h15 15v25 25h-15-15z"/>
+    <path d="m50 115v-15h15 15v15 15h-15-15z"/>
+    <path d="m90 115v-15h20 20v15 15h-20-20z"/>
+  </g>
+</svg>

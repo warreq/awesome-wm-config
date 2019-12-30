@@ -1,0 +1,8 @@
+<svg height="32pt" preserveAspectRatio="xMidYMid meet" viewBox="0 0 22 32" width="22pt" xmlns="http://www.w3.org/2000/svg">
+  <g transform="matrix(.1 0 0 -.1 0 32)">
+    <path d="m0 160v-160h110 110v160 160h-110-110z"/>
+    <path d="m180 160v-70h-70-70v70 70h70 70z" fill="#fff"/>
+    <path d="m54 207-5-15 3-43 3-44h55 55v55 55l-53 3-52 3z"/>
+    <path d="m138 191 27 24-24-27-24-28 24-27 24-28-27 24-28 24-27-24-28-24 24 28 24 27-24 28-24 27 28-24 27-24z" fill="#fff"/>
+  </g>
+</svg>

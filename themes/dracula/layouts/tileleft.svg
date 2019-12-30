@@ -1,0 +1,13 @@
+<svg height="43pt" preserveAspectRatio="xMidYMid meet" viewBox="0 0 29 43" width="29pt" xmlns="http://www.w3.org/2000/svg">
+  <g transform="matrix(.1 0 0 -.1 0 43)">
+    <path d="m0 215v-215h145 145v215 215h-145-145z"/>
+    <path d="m240 215v-95h-95-95v95 95h95 95z" fill="#fff"/>
+    <path d="m70 280v-20h10 10v20 20h-10-10z"/>
+    <path d="m110 280v-20h10 10v20 20h-10-10z"/>
+    <path d="m144 287-5-14 3-69 3-69 38-3 37-3v85 86h-35-36z"/>
+    <path d="m70 215v-25h10 10v25 25h-10-10z"/>
+    <path d="m110 215v-25h10 10v25 25h-10-10z"/>
+    <path d="m70 150v-20h10 10v20 20h-10-10z"/>
+    <path d="m110 150v-20h10 10v20 20h-10-10z"/>
+  </g>
+</svg>
