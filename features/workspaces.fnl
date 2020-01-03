@@ -42,7 +42,7 @@
   "Re-select the last known selected tags for the current workspace"
   (lume.each (. (. workspaces.map workspaces.current) :selected)
              (fn [name] (let [t (awful.tag.find_by_name nil name)]
-                       (tset t :selected true)))))
+                          (tset t :selected true)))))
 
 (lambda workspaces.apply [?name]
   "Activate ?NAME or current workspace, deactivating tags not attached to it"
@@ -73,24 +73,24 @@
 
 (lambda workspaces.load [state]
   "Restore contents of STATE and apply it"
-  (set workspaces.current state.current)
-  (set workspaces.map state.map)
-  (let [lookup (lume.reduce
-                (lume.keys workspaces.map)
-                (fn [k]
-                  (let [v (. workspaces.map k)]
-                    (lume.map v.tags (fn [t] {t k}))))
-                {})]
-    (each [_ tag (ipairs (root.tags))]
-      (workspaces.attach-tag tag nil (. lookup tag.name))))
-  (workspaces.apply))
+  (set workspaces.current (or state.current workspaces.current))
+  (set workspaces.map (or state.map workspaces.map))
+  (let [keys (lume.keys workspaces.map)
+        concat (fn [a b] (lume.merge a b))
+        lookup (-> keys
+                   (lume.map
+                    (fn [k]
+                      (let [v (. workspaces.map k)
+                            kv (lume.map v.tags (fn [t] {t k}))]
+                        (lume.reduce kv concat {}))))
+                   (lume.reduce concat))]
+    (each [_ t (ipairs (root.tags))]
+      (workspaces.attach-tag t nil (or (. lookup tag.name) workspaces.current)))
+    (awful.tag.attached_connect_signal nil "tagged" workspaces.attach-tag)
+    (workspaces.apply)))
 
 (fn workspaces.enable []
   (awesome.emit_signal "workspaces::init")
-  (persistence.register "workspaces" workspaces.save workspaces.load)
-  (awful.tag.attached_connect_signal nil "tagged" workspaces.attach-tag)
-  ;; when initializing, walk all tags and claim any orphans with no workspace
-  (each [_ tag (ipairs (root.tags))]
-    (when (not tag.workspace) (workspaces.attach-tag tag))))
+  (persistence.register "workspaces" workspaces.save workspaces.load))
 
 workspaces

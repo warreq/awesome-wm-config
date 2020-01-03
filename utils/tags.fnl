@@ -22,8 +22,7 @@ Passthrough ?PROPS will merge, overwriting the defaults"
       {:screen s
        :layout (or ?layout awful.layout.suit.tile)
        :selected true
-       :gap beautiful.useless_gap
-       :volatile true}
+       :gap beautiful.useless_gap}
       (or ?props {})))))
 
 (lambda tags.view-next [?scr]

@@ -14,6 +14,7 @@
 
 (local output (require "utils.output"))
 (local notify output.notify)
+(local tag-utils (require "utils.tags"))
 
 (local theme-dir (.. (os.getenv "HOME") "/.config/awesome/themes/"))
 (local theme-name "dracula")
@@ -181,37 +182,6 @@
         (awful.button [] 4 (fn [] (awful.client.focus.byidx 1)))
         (awful.button [] 5 (fn [] (awful.client.focus.byidx -1)))))
 
-
-
-;; Tag management
-
-(fn tag-props
-  ;; generate a sequence of tag properties for a workspace
-  [workspace seq]
-  (lume.map seq (fn [n] {:workspace workspace :pos n})))
-
-(fn get-or-create-tag
-  [scr tag-prop]
-  (let [{:pos pos :workspace workspace} tag-prop
-        tag-by-props (lume.filter scr.tags (fn [t]
-                                             (and
-                                              (= t.pos pos)
-                                              (= t.workspace workspace))))]
-    (if (= (# tag-by-props) 0)
-        (awful.tag.add pos {:layout (. awful.layout.layouts 1)
-                            :screen scr
-                            :pos pos
-                            :workspace workspace })
-        (. tag-by-props 1))))
-
-(fn get-tags-by-prop
-  [key value ?invert]
-  (lume.filter (root.tags) (fn [t] (if ?invert
-                                       (~= (. t key) value))
-                             (= (. t key) value))))
-
-
-
 ;; Table of layouts to cover with awful.layout.inc, order matters.
 (set awful.layout.layouts [
                            awful.layout.suit.fair
@@ -234,12 +204,6 @@
 
 (awful.screen.connect_for_each_screen
  (fn [s]
-   (awful.tag.add (os.clock) {:pos 1
-                              :screen s
-                              :selected true
-                              :hide false
-                              :layout (. awful.layout.layouts 1)})
-
    ;; Create a promptbox for each screen
    (set s.mypromptbox (awful.widget.prompt))
    ;; Create an imagebox widget which will contain an icon indicating which layout we're using.
@@ -355,11 +319,22 @@
 (client.connect_signal "focus" (fn [c] (set c.border_color beautiful.border_focus)))
 (client.connect_signal "unfocus" (fn [c] (set c.border_color beautiful.border_normal)))
 
-;(persistence.enable)
 (wallpaper.enable)
 (workspaces.enable)
+;(persistence.enable)
 
 (awesome.connect_signal "workspaces::applied"
                         (fn [sig]
                           (tset workspace-indicator :markup (.. "<b>" sig "</b>"))))
-(workspaces.apply)
+
+(awesome.connect_signal
+ "startup"
+ (fn []
+   (awful.screen.connect_for_each_screen
+    (fn [s]
+      (when (= (# (tag-utils.list-visible s)) 0)
+        (awful.tag.add (os.clock) {:pos 1
+                                   :screen s
+                                   :selected true
+                                   :hide false
+                                   :layout (. awful.layout.layouts 1)}))))))
