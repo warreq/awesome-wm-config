@@ -20,12 +20,25 @@
   (when (not (workspaces.get name))
     (tset workspaces.map name {:tags [] :selected []})))
 
+(fn workspaces.reverse-tag-lookup []
+  "Get a table where keys are tag names and values are workspace names"
+  (let [concat (fn [a b] (lume.merge a b))]
+    (-> (lume.keys workspaces.map)
+        (lume.map
+         (fn [k]
+           (let [v (. workspaces.map k)
+                 kv (lume.map v.tags (fn [t] {t k}))]
+             (lume.reduce kv concat {}))))
+        (lume.reduce concat))))
+
 (lambda workspaces.attach-tag [tag ?client ?workspace]
-  "Associate TAG with ?WORKSPACE or current workspace"
-  (let [ws (workspaces.get ?workspace)]
-    (when (not (lume.find (or ws.tags []) tag.name))
-      (table.insert (. ws :tags) tag.name))
-    (tset tag :workspace workspaces.current)))
+  "Associate TAG with ?WORKSPACE or current workspace, if it has no connections"
+  (let [lookup (workspaces.reverse-tag-lookup)]
+    (let [wsname (or (. lookup tag.name) ?workspace workspaces.current)
+          ws (workspaces.get wsname)]
+      (when (not (lume.find (or ws.tags []) tag.name))
+        (table.insert (. ws :tags) tag.name))
+      (tset tag :workspace wsname))))
 
 (fn workspaces.save-selected-tags []
   "Find all selected tags across all screens and persist them"
@@ -44,6 +57,13 @@
              (fn [name] (let [t (awful.tag.find_by_name nil name)]
                           (tset t :selected true)))))
 
+(lambda workspaces.clear-tag-ref [tagname]
+  "Walk over the workspaces map, eliminating references to TAGNAME"
+  (each [wsname (pairs workspaces.map)]
+    (let [ws (. workspaces.map wsname)]
+      (lume.remove (. ws :tags) tagname)
+      (lume.remove (. ws :selected) tagname))))
+
 (lambda workspaces.apply [?name]
   "Activate ?NAME or current workspace, deactivating tags not attached to it"
   (let [ws (or ?name workspaces.current)
@@ -59,11 +79,11 @@
       (tag-utils.activate tag))
     (each [_ tag (ipairs inactive)]
       (tag-utils.deactivate tag))
+    (workspaces.restore-selected-tags)
     ;; if there's no active tags on a screen, create one
     (each [scr (screen-utils.screen-iter)]
       (when (= (# (tag-utils.list-visible scr)) 0)
         (tag-utils.create scr nil {:workspace ws})))
-    (workspaces.restore-selected-tags)
     (awesome.emit_signal "workspaces::applied" ws)))
 
 (fn workspaces.save []
@@ -75,22 +95,16 @@
   "Restore contents of STATE and apply it"
   (set workspaces.current (or state.current workspaces.current))
   (set workspaces.map (or state.map workspaces.map))
-  (let [keys (lume.keys workspaces.map)
-        concat (fn [a b] (lume.merge a b))
-        lookup (-> keys
-                   (lume.map
-                    (fn [k]
-                      (let [v (. workspaces.map k)
-                            kv (lume.map v.tags (fn [t] {t k}))]
-                        (lume.reduce kv concat {}))))
-                   (lume.reduce concat))]
+  (let [lookup (workspaces.reverse-tag-lookup)]
     (each [_ t (ipairs (root.tags))]
+      ;; if a tag has no workspace (orphaned), attach it to the current workspace
       (workspaces.attach-tag t nil (or (. lookup tag.name) workspaces.current)))
     (awful.tag.attached_connect_signal nil "tagged" workspaces.attach-tag)
     (workspaces.apply)))
 
 (fn workspaces.enable []
   (awesome.emit_signal "workspaces::init")
+  (awesome.connect_signal "tag::deleted" workspaces.clear-tag-ref)
   (persistence.register "workspaces" workspaces.save workspaces.load))
 
 workspaces

@@ -25,6 +25,13 @@ Passthrough ?PROPS will merge, overwriting the defaults"
        :gap beautiful.useless_gap}
       (or ?props {})))))
 
+(lambda tags.destroy [tag]
+  "Delete TAG"
+  (let [name tag.name]
+    (: tag :delete)
+    (output.notify (.. "destroyed " tag.name))
+    (awesome.emit_signal "tag::deleted" name)))
+
 (lambda tags.view-next [?scr]
   "Unmap current tag and map next tag, creating a new tag if none exists"
   (let [s (or ?scr (awful.screen.focused))
@@ -56,7 +63,7 @@ Passthrough ?PROPS will merge, overwriting the defaults"
         (tset pt :selected true)
         (when (= (# (: ct :clients)) 0)
           (when (~= ct pt)
-            (: ct :delete)))))))
+            (tags.destroy ct)))))))
 
 (lambda tags.activate [tag]
   "Idempotently activate a tag"

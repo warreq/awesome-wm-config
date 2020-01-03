@@ -321,7 +321,7 @@
 
 (wallpaper.enable)
 (workspaces.enable)
-;(persistence.enable)
+(persistence.enable)
 
 (awesome.connect_signal "workspaces::applied"
                         (fn [sig]

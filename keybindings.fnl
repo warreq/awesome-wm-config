@@ -57,6 +57,7 @@
                   [:g tagcmd.inc-gap "increase gaps"]
                   [:G tagcmd.dec-gap "decrease gaps"]]
                  ["Transfer"
+                  [:q tagcmd.destroy-current "destroy" {:exit true}] 
                   [:h (fn [] (output.notify "TODO")) "move to screen left"]
                   [:l (fn [] (output.notify "TODO")) "move to screen right"]]))
 

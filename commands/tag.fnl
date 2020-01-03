@@ -18,6 +18,10 @@
           ct s.selected_tag]
       (tset ct :layout layout))))
 
+(fn tagcmd.destroy-current []
+  "Delete the currently focused tag"
+  (tags.destroy (. (awful.screen.focused) :selected_tag)))
+
 (fn tagcmd.go-right []
   "Unmap current tag and map next tag, creating a new tag if none exists"
   (tags.view-next (awful.screen.focused)))

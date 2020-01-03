@@ -46,16 +46,16 @@
   (awesome.emit_signal (.. signame "loading"))
   (let [file (read-file cachedir statefile)
         s (if persistence.enabled
-              (if file (json.decode file) nil)
+              (if file (json.decode file) {})
               {})]
     (when s
       (each [_ sub (ipairs subscribers)]
-          (awesome.emit_signal
-           (.. signame sub.name "::" "loading"))
-          (sub.on-load (or (. s sub.name) {}))
-          (awesome.emit_signal
-           (.. signame sub.name "::" "loaded")))))
-    (awesome.emit_signal (.. signame "loaded")))
+        (awesome.emit_signal
+         (.. signame sub.name "::" "loading"))
+        (sub.on-load (or (. s sub.name) {}))
+        (awesome.emit_signal
+         (.. signame sub.name "::" "loaded")))))
+  (awesome.emit_signal (.. signame "loaded")))
 
 (fn layout-name [layout]
   (let [tv (type layout)]
