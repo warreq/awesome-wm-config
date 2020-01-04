@@ -18,34 +18,34 @@
   "Move WIN in x or y COORD by dpi-adjusted STEP"
   (tset win coord (+ (. win coord) (dpi step))))
 
-(fn wincmd.move-left [win]
+(lambda wincmd.move-left [?win]
   "Move WIN or currently focused client to the left.
  If floating, translates on the x-axis; if tiled, swaps with left neighbor"
-  (let [c (or win client.focus)]
+  (let [c (or ?win client.focus)]
     (if c.floating
         (wincmd.move c :x (* default-step -1))
         (awful.client.swap.bydirection :left))))
 
-(fn wincmd.move-right [win]
+(lambda wincmd.move-right [?win]
   "Move WIN or currently focused client to the right.
  If floating, translates on the x-axis; if tiled, swaps with right neighbor"
-  (let [c (or win client.focus)]
+  (let [c (or ?win client.focus)]
     (if c.floating
         (wincmd.move c :x default-step)
         (awful.client.swap.bydirection :right))))
 
-(fn wincmd.move-up [win]
+(lambda wincmd.move-up [?win]
   "Move WIN or currently focused client upwards.
  If floating, translates on the y-axis; if tiled, swaps with upper neighbor"
-  (let [c (or win client.focus)]
+  (let [c (or ?win client.focus)]
     (if c.floating
         (wincmd.move c :y (* default-step -1))
         (awful.client.swap.bydirection :up))))
 
-(fn wincmd.move-down [win]
+(lambda wincmd.move-down [?win]
   "Move WIN or currently focused client downwards.
  If floating, translates on the y-axis; if tiled, swaps with lower neighbor"
-  (let [c (or win client.focus)]
+  (let [c (or ?win client.focus)]
     (if c.floating
         (wincmd.move c :y default-step)
         (awful.client.swap.bydirection :down))))
@@ -154,6 +154,11 @@
   (let [c (or win client.focus)]
     (set c.maximized_horizontal (not c.maximized_horizontal))
     (: c :raise)))
+
+(lambda wincmd.toggle-sticky [?win]
+  "Toggle whether or not the window is displayed on all tags"
+  (let [c (or ?win client.focus)]
+    (tset c :sticky (not (. c :sticky)))))
 
 (fn wincmd.close [win]
   "Kill WIN or currently focused client"

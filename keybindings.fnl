@@ -31,8 +31,9 @@
                   [:N wincmd.snap-bottom-left-corner "snap to bottom left corner"]
                   [:B wincmd.snap-bottom-right-corner "snap to bottom right corner"]]
                  ["Toggle"
-                  [:space wincmd.toggle-floating "floating"]
-                  [:f wincmd.toggle-fullscreen "fullscreen" {:exit true}]]))
+                  [:space wincmd.toggle-floating "⏼ floating"]
+                  [:s wincmd.toggle-sticky "⏼ sticky"]
+                  [:f wincmd.toggle-fullscreen "⏼ fullscreen" {:exit true}]]))
 
 (local tag-hydra
        (defhydra {:name "Tags 🐲" :take-counts true :key [[:mod] :t] }
