@@ -9,17 +9,18 @@
 (local signame "persistence::")
 (local cachedir (awful.util.get_cache_dir))
 (local statefile "state.json")
+(local permafile "persisted.json")
 
 (local subscribers [])
 
 ;; initialize as disabled
 (set persistence.enabled false)
 
-(fn write-file [path filename content]
+(lambda write-file [path filename content]
   (let [f (io.open (.. path "/" filename) "w")]
     (: f :write content)))
 
-(fn read-file [path filename]
+(lambda read-file [path filename]
   (match (io.open (.. path "/" filename) "r")
     [nil err] (do (write-file path filename "{}")
                   (match (io.open (.. path "/" filename) "r")
@@ -27,35 +28,49 @@
                     f (: f :read "*all")))
     f (: f :read "*all")))
 
-(fn persistence.register [name save on-load]
-  ""
-  (table.insert subscribers {:name name :save save :on-load on-load}))
+(lambda delete-file [path filename]
+  (os.remove (.. path filename))) 
+
+(lambda persistence.register [name save on-load ?persist-across-reboot?]
+  "Register hooks for saving and loading state"
+  (table.insert subscribers {:name name
+                             :save save
+                             :on-load on-load
+                             :perma ?persist-across-reboot?}))
 
 (fn persistence.save-all []
   (var new-state {})
+  (var new-perma {})
   (awesome.emit_signal (.. signame "saving"))
   (each [_ sub (ipairs subscribers)]
-    (awesome.emit_signal (.. signame sub.name "::" "saving"))
-    (tset new-state sub.name (sub.save))
-    (awesome.emit_signal (.. signame sub.name "::" "saved")))
+    (let [s (if sub.perma new-perma new-state)]
+      (awesome.emit_signal (.. signame sub.name "::" "saving"))
+      (tset s sub.name (sub.save))
+      (awesome.emit_signal (.. signame sub.name "::" "saved"))))
   (when persistence.enabled
-  (write-file cachedir statefile (json.encode new-state)))
+    (write-file cachedir statefile (json.encode new-state))
+    (write-file cachedir permafile (json.encode new-perma)))
   (awesome.emit_signal (.. signame "saved")))
 
 (fn persistence.load-all []
   (awesome.emit_signal (.. signame "loading"))
-  (let [file (read-file cachedir statefile)
+  (let [state-file (read-file cachedir statefile)
+        perma-file (read-file cachedir permafile)
         s (if persistence.enabled
-              (if file (json.decode file) {})
+              (if state-file (json.decode state-file) {})
+              {})
+        p (if persistence.enabled
+              (if perma-file (json.decode perma-file) {})
               {})]
-    (when s
-      (each [_ sub (ipairs subscribers)]
-        (awesome.emit_signal
-         (.. signame sub.name "::" "loading"))
-        (sub.on-load (or (. s sub.name) {}))
-        (awesome.emit_signal
-         (.. signame sub.name "::" "loaded")))))
-  (awesome.emit_signal (.. signame "loaded")))
+    (each [_ sub (ipairs subscribers)]
+      (let [data (or sub.perma p s)]
+        (when data
+          (awesome.emit_signal
+           (.. signame sub.name "::" "loading"))
+          (sub.on-load (or (. s sub.name) {}))
+          (awesome.emit_signal
+           (.. signame sub.name "::" "loaded")))))
+    (awesome.emit_signal (.. signame "loaded"))))
 
 (fn layout-name [layout]
   (let [tv (type layout)]
@@ -122,8 +137,13 @@
 
 ;; other features can depend on persistence's signals,
 ;; even if persistence is not enabled
-(awesome.connect_signal "exit" (fn [restart?]
-                                 (when restart? (persistence.save-all))))
+(awesome.connect_signal
+ "exit"
+ (fn [restart?]
+   (if restart?
+       (persistence.save-all)
+       (persistence.delete-file cachedir statefile))))
+
 (awesome.connect_signal "startup" (fn [] (persistence.load-all)))
 
 persistence
