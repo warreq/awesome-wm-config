@@ -19,6 +19,7 @@
 (local theme-dir (.. (os.getenv "HOME") "/.config/awesome/themes/"))
 (local theme-name "dracula")
 (local theme (require (.. "themes." theme-name ".theme")))
+(local deffamiliar (require "features.familiar"))
 
 (beautiful.init theme)
 
@@ -326,6 +327,19 @@
 (awesome.connect_signal "workspaces::applied"
                         (fn [sig]
                           (tset workspace-indicator :markup (.. "<b>" sig "</b>"))))
+
+(deffamiliar {:name :terminal
+              :key [[:mod] :g]
+              :command "kitty"
+              :placement (+ awful.placement.left
+                            awful.placement.maximize_vertically)})
+
+(deffamiliar {:name :browser
+              :key [[:mod] :i]
+              :command "firefox-nightly -new-instance -P familiar"
+              :placement (+ awful.placement.left
+                            awful.placement.maximize_vertically)})
+                            
 
 (awesome.connect_signal
  "startup"
