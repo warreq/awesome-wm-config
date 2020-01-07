@@ -1,4 +1,4 @@
-fennel = require("fennel")
+fennel = require("vendor.fennel")
 local searcher = fennel.makeSearcher({
   correlate = true,
   useMetadata = true
