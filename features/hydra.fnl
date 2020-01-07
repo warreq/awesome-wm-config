@@ -171,9 +171,7 @@ count tracked in NUM-BUF, unless COUNT? is false, and optionally
 terminate the keygrabber if the :exit prop in PROP-MAP for KEY is true
 
 RETURN the resulting state of the NUM-BUF."
-  (let [key (match key
-              " " "space" ; space not sent as keysym ???
-              _   key)] 
+  (let [key (if (= key " ") "space" key)] ; space not sent as keysym ???
     (if (lume.find allowed-keys key)
         (if (and count? (lume.find [:0 :1 :2 :3 :4 :5 :6 :7 :8 :9] key))
             (.. num-buf key)
