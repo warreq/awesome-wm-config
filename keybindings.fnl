@@ -1,5 +1,6 @@
 ;; Keyboard & Mouse bindings declarations -- all in one place
 (local awful (require "awful"))
+(local gears (require "gears"))
 (local hotkeys_popup (require "awful.hotkeys_popup"))
 (local lume (require "vendor.lume"))
 (local input (require "utils.input"))

@@ -1,3 +1,4 @@
+local awful = require("awful")
 local blacklisted_snid = setmetatable({}, {__mode = "v" })
 
 --- Make startup notification work for some clients like XTerm. This is ugly
