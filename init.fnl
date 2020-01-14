@@ -1,16 +1,16 @@
-(global gears (require "gears"))
-(global awful (require "awful"))
+(local gears (require "gears"))
+(local awful (require "awful"))
 (require "awful.autofocus")
-(global wibox (require "wibox"))
-(global beautiful (require "beautiful"))
-(global xresources (require "beautiful.xresources"))
-(global naughty (require "naughty"))
-(global menubar (require "menubar"))
-(global hotkeys_popup (require "awful.hotkeys_popup"))
+(local wibox (require "wibox"))
+(local beautiful (require "beautiful"))
+(local xresources (require "beautiful.xresources"))
+(local naughty (require "naughty"))
+(local menubar (require "menubar"))
+(local hotkeys_popup (require "awful.hotkeys_popup"))
 (require-macros :awesome-macros)
-(global lume (require "vendor.lume"))
+(local lume (require "vendor.lume"))
 
-(global dpi xresources.apply_dpi)
+(local dpi xresources.apply_dpi)
 
 (local output (require "utils.output"))
 (local notify output.notify)
@@ -25,12 +25,16 @@
 
 (global rofi (require "features.rofi"))
 
-(global input (require "utils.input"))
-(global keybindings (require "keybindings"))
-(global rules (require "rules"))
+(local input (require "utils.input"))
+(local keybindings (require "keybindings"))
+(local rules (require "rules"))
 (local persistence (require "features.persistence"))
 (local workspaces (require "features.workspaces"))
 (local wallpaper (require "features.wallpaper"))
+
+(require "daemons.battery")
+(require "daemons.cpu")
+(require "daemons.ram")
 
 ;; Error handling
 ;; Check if awesome encountered an error during startup and fell back to
@@ -331,14 +335,20 @@
 (deffamiliar {:name :terminal
               :key [[:mod] :g]
               :command "kitty"
-              :placement (+ awful.placement.left
-                            awful.placement.maximize_vertically)})
+              :placement :left
+              :screen-ratio 0.33})
 
 (deffamiliar {:name :browser
               :key [[:mod] :i]
               :command "firefox-nightly -new-instance -P familiar"
-              :placement (+ awful.placement.left
-                            awful.placement.maximize_vertically)})
+              :placement :bottom
+              :screen-ratio 0.70})
+
+(deffamiliar {:name :pavu
+              :key [[:mod] :o]
+              :command "pavucontrol"
+              :placement :right
+              :screen-ratio 0.70})
                             
 
 (awesome.connect_signal
