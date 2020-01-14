@@ -2,6 +2,8 @@
 (local awful (require "awful"))
 (local beautiful (require "beautiful"))
 (local xresources (require "beautiful.xresources"))
+(local tagutils (require "utils.tags"))
+(local output (require "utils.output"))
 (local dpi xresources.apply_dpi)
 
 (local default-step 16)
@@ -189,5 +191,18 @@
   (let [c (or win client.focus)]
     (wincmd.mouse-raise c)
     (awful.mouse.client.resize c)))
+
+(fn wincmd.transfer-to-next-tag [win]
+  "Move WIN or currently focused client to the next tag"
+  (let [c (or win client.focus)
+        nt (tagutils.get-next)]
+    (: c :move_to_tag nt)
+    (tset nt :selected false)))
+
+(fn wincmd.transfer-to-prev-tag [win]
+  "Move WIN or currently focused client to the previous tag"
+  (let [c (or win client.focus)
+        pt (tagutils.get-prev)]
+    (: c :move_to_tag pt)))
 
 wincmd

@@ -32,8 +32,8 @@ Passthrough ?PROPS will merge, overwriting the defaults"
     (output.notify (.. "destroyed " tag.name))
     (awesome.emit_signal "tag::deleted" name)))
 
-(lambda tags.view-next [?scr]
-  "Unmap current tag and map next tag, creating a new tag if none exists"
+(lambda tags.get-next [?scr]
+  "Return the tag after current tag, creating a new tag if there is no next"
   (let [s (or ?scr (awful.screen.focused))
         visible (tags.list-visible s)
         ct (or
@@ -41,11 +41,30 @@ Passthrough ?PROPS will merge, overwriting the defaults"
             (lume.last visible))
         ct-index (lume.find visible ct)
         nt (. visible (+ (or ct-index (# visible)) 1))]
-    (if nt
-        (tset nt :selected true)
-        (tags.create s ct.layout))
+    (or nt (tags.create s ct.layout))))
+
+(lambda tags.view-next [?scr]
+  "Unmap current tag and map next tag, creating a new tag if none exists"
+  (let [s (or ?scr (awful.screen.focused))
+        visible (tags.list-visible s)
+        ct (or
+            (. (awful.screen.focused) :selected_tag)
+            (lume.last visible))
+        nt (tags.get-next s)]
+    (tset nt :selected true)
     (when ct
       (tset ct :selected false))))
+
+(lambda tags.get-prev [?scr]
+  "Return the tag before current tag, or first visible tag"
+  (let [s (or ?scr (awful.screen.focused))
+        visible (tags.list-visible s)
+        ct (or
+            (. (awful.screen.focused) :selected_tag)
+            (lume.last visible))
+        ct-index (lume.find visible ct)
+        pt-index (- (or ct-index (# visible)) 1)]
+    (or (. visible pt-index) (. visible 1))))
 
 (lambda tags.view-prev [?scr]
   "Unmap current tag and map previous tag"
@@ -54,9 +73,7 @@ Passthrough ?PROPS will merge, overwriting the defaults"
         ct (or
             (. (awful.screen.focused) :selected_tag)
             (lume.last visible))
-        ct-index (lume.find visible ct)
-        pt-index (- (or ct-index (# visible)) 1)
-        pt (or (. visible pt-index) (. visible 1))]
+        pt (tags.get-prev s)]
     (when pt 
       (do
         (tset ct :selected false)
