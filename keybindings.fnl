@@ -4,6 +4,7 @@
 (local hotkeys_popup (require "awful.hotkeys_popup"))
 (local lume (require "vendor.lume"))
 (local input (require "utils.input"))
+(local pa (require "utils.pulseaudio"))
 (local wincmd (require "commands.window"))
 (local tagcmd (require "commands.tag"))
 (local workspacecmd (require "commands.workspace"))
@@ -80,7 +81,11 @@
    (input.key-group
     "exec"
     [[:mod] :space (fn [] (awful.util.spawn "rofi -show run")) "app launcher"]
-    [[:mod] :Return (fn [] (awful.spawn "xterm")) "open terminal"]
+    [[:mod] :Return (fn [] (awful.spawn "alacritty")) "open terminal"]
+    [[] :XF86AudioMute pa.toggle-muted "⏼ audio muted"]
+    [[] :XF86AudioMicMute pa.toggle-mic-mute "⏼ mic muted"]
+    [[] :XF86AudioRaiseVolume (fn [] (pa.adjust-volume 5)) "raise volume"]
+    [[] :XF86AudioLowerVolume (fn [] (pa.adjust-volume -5)) "lower volume"]
     )
 
    (input.key-group

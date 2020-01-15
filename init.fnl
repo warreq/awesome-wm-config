@@ -10,6 +10,15 @@
 (require-macros :awesome-macros)
 (local lume (require "vendor.lume"))
 
+;; Error handling
+;; Check if awesome encountered an error during startup and fell back to
+;; another config (This code will only ever execute for the fallback config)
+(local err_preset { :timeout 0 :bg "#000000" :fg "#ff0000" :max_height 1080 })
+(when awesome.startup_errors
+  (naughty.notify {:preset err_preset
+                   :title "Oops, there were errors during startup!"
+                   :text awesome.startup_errors}))
+
 (local dpi xresources.apply_dpi)
 
 (local output (require "utils.output"))
@@ -35,15 +44,7 @@
 (require "daemons.battery")
 (require "daemons.cpu")
 (require "daemons.ram")
-
-;; Error handling
-;; Check if awesome encountered an error during startup and fell back to
-;; another config (This code will only ever execute for the fallback config)
-(local err_preset { :timeout 0 :bg "#000000" :fg "#ff0000" :max_height 1080 })
-(when awesome.startup_errors
-  (naughty.notify {:preset err_preset
-                   :title "Oops, there were errors during startup!"
-                   :text awesome.startup_errors}))
+(require "daemons.pulseaudio")
 
 ;; Handle runtime errors after startup
 (do
@@ -60,7 +61,6 @@
        (set in_error false)))))
 
 ;; Utils
-
 
 (fn range
   [start end ?step]
