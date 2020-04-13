@@ -112,6 +112,7 @@ This is similar to `awful.spawn`, but without the callback bug in v4.3-530"
                            :is_familiar true
                            :familiar_name conf.name
                            :floating true
+                           :ontop true
                            :sticky true
                            :placement placement
                            :skip_taskbar true
@@ -136,7 +137,9 @@ This is similar to `awful.spawn`, but without the callback bug in v4.3-530"
   "Call or dismiss familiar named CONF.NAME"
   (let [f (find-or-summon-familiar conf)]
     (when f
-      (tset f :hidden (not f.hidden)))))
+      (tset f :hidden (not f.hidden))
+      (when (not f.hidden)
+        (: f :emit_signal "request::activate")))))
 
 (fn fam.save []
   "Return current state for persistence"
@@ -152,6 +155,7 @@ This is similar to `awful.spawn`, but without the callback bug in v4.3-530"
             placement (gen-placement conf)]
       (tset c :familiar_name conf.name)
       (tset c :is_familiar true)
+      (tset c :ontop true)
       (tset c :sticky true)
       (tset c :hidden true)
       (awful.titlebar.hide c)
