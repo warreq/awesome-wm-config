@@ -12,6 +12,7 @@
  ; based on hlissner's doom-dracula emacs theme
 (local core-colors
        {
+        :black          "#191A21"
         :bg             "#282a36" 
         :bg-alt         "#1E2029" 
         :base0          "#1E2029" 
@@ -111,7 +112,7 @@
         :wibar_ontop false
         :wibar_height (dpi 32)
         :wibar_fg core-colors.fg
-        :wibar_bg core-colors.bg
+        :wibar_bg core-colors.black
         :wibar_border_color core-colors.base5
         :wibar_border_width (dpi 0)
         :wibar_border_radius (dpi 0)

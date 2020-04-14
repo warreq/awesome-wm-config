@@ -40,6 +40,7 @@
 (local persistence (require "features.persistence"))
 (local workspaces (require "features.workspaces"))
 (local wallpaper (require "features.wallpaper"))
+(local identicon (require "utils.identicon"))
 
 (require "daemons.battery")
 (require "daemons.cpu")
@@ -59,16 +60,6 @@
                         :title "Oops, an error happened!"
                         :text (tostring err)})
        (set in_error false)))))
-
-;; Utils
-
-(fn range
-  [start end ?step]
-  (local s (if (= ?step nil) 1 ?step)) 
-  (var seq [])
-  (for [i start end s]
-    (table.insert seq i))
-  seq)
 
 ;; Variable definitions
 
@@ -125,11 +116,17 @@
         (search-hierarchy-for-widget hierarchy widget acc)
         acc))))
 
+(local ws-svg (identicon.generate-svg (.. (os.time)) 7 32))
+
+(let [f (io.open (.. (awful.util.get_cache_dir)  "/" "testing3.svg") "w")]
+  (: f :write ws-svg)
+  (: f :close))
+
 (local workspace-indicator
        (wibox.widget (/<
-                      :widget wibox.widget.textbox
-                      :align :center
-                      :markup ""
+                      :widget wibox.widget.imagebox
+                      :resize true
+                      :image (.. (awful.util.get_cache_dir)  "/" "testing3.svg")
                       )))
 
 
@@ -220,16 +217,39 @@
                               (awful.button [] 4 (fn [] (awful.layout.inc 1 s)))
                               (awful.button [] 5 (fn [] (awful.layout.inc -1 s)))))
    ;; Create a taglist widget
-   (set s.mytaglist (awful.widget.taglist {
-                                           :screen s
-                                           :filter awful.widget.taglist.filter.all
-                                           :buttons taglist_buttons
-                                           }))
+   (set s.mytaglist (awful.widget.taglist
+                     {
+                      :screen s
+                      :filter awful.widget.taglist.filter.all
+                      :style {:shape gears.shape.powerline}
+                      :widget_template (/<
+                                         :widget wibox.container.background
+                                         :id :background_role
+                                         (/<
+                                          :widget wibox.container.margin
+                                          :left 18
+                                          :right 18
+                                          (/<
+                                            :layout wibox.layout.fixed.horizontal
+                                            (/<
+                                             :widget wibox.container.margin
+                                             :margins 10 
+                                             (/<
+                                              :id :icon_role
+                                              :widget wibox.widget.imagebox))
+                                            (/<
+                                             :id :text_role
+                                             :widget wibox.widget.textbox)
+                                            (/<
+                                             :id :index_role
+                                             :widget wibox.widget.textbox))))
+                      :buttons taglist_buttons
+                      }))
 
    ;; Create a tasklist widget
    (set s.mytasklist (awful.widget.tasklist {
                                              :screen s
-                                             :filter awful.widget.tasklist.filter.currenttags
+                                             :filter awful.widget.tasklist.filter.minimizedcurrenttags
                                              :buttons tasklist_buttons
                                              }))
 
@@ -244,7 +264,7 @@
                          mylauncher
                          (/<
                           :widget wibox.container.margin
-                          :margins 4
+                          :margins (dpi 4)
                           workspace-indicator)
                          s.mytaglist)
                         s.mytasklist ;; Middle widget

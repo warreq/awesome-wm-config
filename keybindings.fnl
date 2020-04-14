@@ -34,7 +34,9 @@
                   [:U wincmd.snap-top-right-corner "snap to top right"]
                   [:N wincmd.snap-bottom-left-corner "snap to bottom left"]
                   [:B wincmd.snap-bottom-right-corner "snap to bottom right"]]
-                 ["Toggle"
+                 ["State"
+                  [:m wincmd.minimize "minimize" {:exit true}]
+                  [:q wincmd.close "close" {:exit true}]
                   [:space wincmd.toggle-floating "⏼ floating"]
                   [:s wincmd.toggle-sticky "⏼ sticky"]
                   [:f wincmd.toggle-fullscreen "⏼ fullscreen" {:exit true}]]))

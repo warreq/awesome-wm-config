@@ -10,6 +10,8 @@
 (set workspaces.map {:default {:tags [] :selected []}})
 (set workspaces.current :default)
 
+(set workspaces.name-cache [])
+
 (fn workspaces.get [?name]
   "Get the current workspace, or the workspace with name ?NAME"
   (let [name (or ?name workspaces.current)]
@@ -102,9 +104,19 @@
     (awful.tag.attached_connect_signal nil "tagged" workspaces.attach-tag)
     (workspaces.apply)))
 
+(fn workspaces.save-names []
+  workspaces.name-cache)
+
+(lambda workspaces.load-names [l]
+  (set workspaces.name-cache l)) 
+
 (fn workspaces.enable []
   (awesome.emit_signal "workspaces::init")
   (awesome.connect_signal "tag::deleted" workspaces.clear-tag-ref)
-  (persistence.register "workspaces" workspaces.save workspaces.load))
+  (persistence.register "workspaces" workspaces.save workspaces.load)
+  (persistence.register "workspace-names"
+                        workspaces.save-names
+                        workspaces.load-names
+                        true))
 
 workspaces

@@ -2,6 +2,7 @@
 (local beautiful (require "beautiful"))
 (local lume (require "vendor.lume"))
 (local output (require "utils.output"))
+(local identicon (require "utils.identicon"))
 
 (local tags {})
 
@@ -15,12 +16,14 @@
 (lambda tags.create [?scr ?layout ?props]
   "Create a new tag on ?SCR or focused screen with ?LAYOUT. 
 Passthrough ?PROPS will merge, overwriting the defaults"
-  (let [s (or ?scr (awful.screen.focused))]
+  (let [s (or ?scr (awful.screen.focused))
+        id (os.clock)] ; unique, sequential name for filtering/sorting purposes
     (awful.tag.add
-     (os.clock) ; use unique, sequential name for filtering/sorting purposes
+     id 
      (lume.merge
       {:screen s
        :layout (or ?layout awful.layout.suit.tile)
+       :icon (identicon.create id 5 256)
        :selected true
        :gap beautiful.useless_gap}
       (or ?props {})))))

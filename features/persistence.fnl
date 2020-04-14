@@ -18,7 +18,8 @@
 
 (lambda write-file [path filename content]
   (let [f (io.open (.. path "/" filename) "w")]
-    (: f :write content)))
+    (: f :write content)
+    (: f :close)))
 
 (lambda read-file [path filename]
   (match (io.open (.. path "/" filename) "r")
