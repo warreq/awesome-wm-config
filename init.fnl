@@ -9,6 +9,8 @@
 (local hotkeys_popup (require "awful.hotkeys_popup"))
 (require-macros :awesome-macros)
 (local lume (require "vendor.lume"))
+(local tabler-icons (require "icons.tabler"))
+(local icon-loader (require "icons.loader"))
 
 ;; Error handling
 ;; Check if awesome encountered an error during startup and fell back to
@@ -40,7 +42,7 @@
 (local persistence (require "features.persistence"))
 (local workspaces (require "features.workspaces"))
 (local wallpaper (require "features.wallpaper"))
-(local identicon (require "utils.identicon"))
+(local ws-widgets (require "widgets.workspace-switcher"))
 
 (require "daemons.battery")
 (require "daemons.cpu")
@@ -81,23 +83,12 @@
                                         [ "awesome" myawesomemenu beautiful.awesome_icon ]
                                         [ "open terminal" terminal ]]}))
 
-(global mylauncher (awful.widget.launcher {:image beautiful.awesome_icon
+(global mylauncher (awful.widget.launcher {:image (icon-loader.load :tabler :box {:viewBox "0 0 24 24"})
                                            :menu mymainmenu }))
 
 ;; Menubar configuration
 (set menubar.utils.terminal terminal) ;; Set the terminal for applications that require it
 
-;; Wibar
-;; Create a textclock widget
-
-(local my-textclock
-       (wibox.widget (/<
-                      :layout wibox.layout.fixed.horizontal
-                      (/<
-                       :id "my-textclock"
-                       :widget wibox.widget.textclock
-                       :timezone "Europe/Copenhagen")
-                      )))
 
 (fn search-hierarchy-for-widget
   [hierarchy widget acc]
@@ -115,50 +106,6 @@
         (local acc []) ;; init with an empty result accumulator
         (search-hierarchy-for-widget hierarchy widget acc)
         acc))))
-
-(local ws-svg (identicon.generate-svg (.. (os.time)) 7 32))
-
-(let [f (io.open (.. (awful.util.get_cache_dir)  "/" "testing3.svg") "w")]
-  (: f :write ws-svg)
-  (: f :close))
-
-(local workspace-indicator
-       (wibox.widget (/<
-                      :widget wibox.widget.imagebox
-                      :resize true
-                      :image (.. (awful.util.get_cache_dir)  "/" "testing3.svg")
-                      )))
-
-
-
-(local my-calendar
-       (awful.popup (/<
-                     :shape gears.shape.infobubble
-                     :minimum_height 200 
-                     :maximum_height 200 
-                     :minimum_width 250
-                     :maximum_width 250
-                     :ontop true
-                     :visible false
-                     :widget (/<
-                              (wibox.widget
-                               {:widget wibox.widget.calendar.month
-                                :date (os.date "*t")
-                                :week_numbers true
-                                :long_weekdays false
-                                :spacing 1})
-                              :margins 20
-                              :widget wibox.container.margin
-                              ))))
-
-
-(: my-textclock :connect_signal "button::release"
-   (fn []
-     (doto my-calendar
-       (tset :x (- (. mouse.current_widget_geometry :x) 200))
-       (tset :y 20)
-       (tset :visible (not (. my-calendar :visible))))))
-
 
 ;; Create a wibox for each screen and add it
 (local taglist_buttons
@@ -206,6 +153,7 @@
 
 (awful.screen.connect_for_each_screen
  (fn [s]
+   ;; Wibar
    ;; Create a promptbox for each screen
    (set s.mypromptbox (awful.widget.prompt))
    ;; Create an imagebox widget which will contain an icon indicating which layout we're using.
@@ -216,34 +164,98 @@
                               (awful.button [] 3 (fn [] (awful.layout.inc -1 s)))
                               (awful.button [] 4 (fn [] (awful.layout.inc 1 s)))
                               (awful.button [] 5 (fn [] (awful.layout.inc -1 s)))))
+
+   (set s.my-calendar
+        (awful.popup (/<
+                      :shape gears.shape.infobubble
+                      :minimum_height (dpi 200)
+                      :maximum_height (dpi 200)
+                      :minimum_width (dpi 250)
+                      :maximum_width (dpi 250)
+                      :screen s
+                      :ontop true
+                      :visible false
+                      :widget (/<
+                               (wibox.widget
+                                {:widget wibox.widget.calendar.month
+                                 :date (os.date "*t")
+                                 :week_numbers true
+                                 :long_weekdays false
+                                 :spacing 5})
+                               :margins (dpi 30)
+                               :widget wibox.container.margin
+                               ))))
+
+   ;; Create a textclock widget
+   (set s.my-textclock
+        (wibox.widget (/<
+                       :layout wibox.layout.fixed.horizontal
+                       (/<
+                        :id "my-textclock"
+                        :widget wibox.widget.textclock
+                        :timezone "Europe/Copenhagen")
+                       )))
+
+
+   (: s.my-textclock :connect_signal "button::release"
+      (fn []
+        (let [screen-x s.geometry.x
+              screen-y s.geometry.y
+              widget-x mouse.current_widget_geometry.x
+              widget-y (dpi mouse.current_widget_geometry.y)
+              widget-width mouse.current_widget_geometry.width
+              widget-center (+ widget-x (/ widget-width 2))
+              popup-width (dpi 250)]
+          (doto s.my-calendar
+            (tset :x (- (+ screen-x widget-center) (/ popup-width 2)))
+            (tset :y (+ s.geometry.y (dpi 32)))
+            (tset :screen s)
+            (tset :visible (not s.my-calendar.visible))))))
+
    ;; Create a taglist widget
    (set s.mytaglist (awful.widget.taglist
                      {
                       :screen s
                       :filter awful.widget.taglist.filter.all
-                      :style {:shape gears.shape.powerline}
+                      :style {:shape gears.shape.circle}
                       :widget_template (/<
-                                         :widget wibox.container.background
-                                         :id :background_role
+                                        :widget wibox.container.background
+                                        :id :background_role
+                                        :create_callback
+                                        (fn [self c3 i o]
+                                          (: self :connect_signal
+                                             :mouse::enter
+                                             (fn []
+                                               (when (~= self.bg "#ff0000")
+                                                 (tset self :backup self.bg)
+                                                 (tset self :has_backup true))
+                                               (tset self :bg "#ff0000")))
+                                          (: self :connect_signal
+                                             :mouse::leave
+                                             (fn []
+                                               (when self.has_backup
+                                                 (tset self :bg self.backup)))))
+                                        (/<
+                                         :widget wibox.container.margin
+                                         :left 16
+                                         :right 16
                                          (/<
-                                          :widget wibox.container.margin
-                                          :left 18
-                                          :right 18
+                                          :layout wibox.layout.fixed.horizontal
                                           (/<
-                                            :layout wibox.layout.fixed.horizontal
-                                            (/<
-                                             :widget wibox.container.margin
-                                             :margins 10 
-                                             (/<
-                                              :id :icon_role
-                                              :widget wibox.widget.imagebox))
-                                            (/<
-                                             :id :text_role
-                                             :widget wibox.widget.textbox)
-                                            (/<
-                                             :id :index_role
-                                             :widget wibox.widget.textbox))))
+                                           :widget wibox.container.margin
+                                           :margins 16 
+                                           (/<
+                                            :id :icon_role
+                                            :widget wibox.widget.imagebox))
+                                        ;(/<
+                                        ; :id :text_role
+                                        ; :widget wibox.widget.textbox)
+                                          (/<
+                                           :id :index_role
+                                           :widget wibox.widget.textbox))))
+                      
                       :buttons taglist_buttons
+                      
                       }))
 
    ;; Create a tasklist widget
@@ -265,13 +277,13 @@
                          (/<
                           :widget wibox.container.margin
                           :margins (dpi 4)
-                          workspace-indicator)
+                          ws-widgets.indicator)
                          s.mytaglist)
                         s.mytasklist ;; Middle widget
                         (/< ;; Right widgets
                          :layout wibox.layout.fixed.horizontal
                          (wibox.widget.systray)
-                         my-textclock
+                         s.my-textclock
                          s.mylayoutbox)))))
 
 
@@ -348,10 +360,6 @@
 (workspaces.enable)
 (persistence.enable)
 
-(awesome.connect_signal "workspaces::applied"
-                        (fn [sig]
-                          (tset workspace-indicator :markup (.. "<b>" sig "</b>"))))
-
 (deffamiliar {:name :terminal
               :key [[:mod] :g]
               :command "kitty"
@@ -369,16 +377,14 @@
               :command "pavucontrol"
               :placement :right
               :screen-ratio 0.70})
-                            
 
 (awesome.connect_signal
- "startup"
+ :startup
  (fn []
    (awful.screen.connect_for_each_screen
     (fn [s]
+      ;; each screen initializes with a tag, if it doesn't have one already
       (when (= (# (tag-utils.list-visible s)) 0)
-        (awful.tag.add (os.clock) {:pos 1
-                                   :screen s
-                                   :selected true
-                                   :hide false
-                                   :layout (. awful.layout.layouts 1)}))))))
+        (tag-utils.create s (. awful.layout.layouts 1)))))))
+
+

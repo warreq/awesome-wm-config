@@ -61,8 +61,8 @@
  Use DIMENSION as a size hint.
  If ?COLOR-LIST? is provided, restrict output to that palette"
   (let [hash (bsd-checksum str)
-        size  (dpi (/ dimension squares))
-        canvas (dpi (* squares size))
+        size  (/ dimension squares)
+        canvas (* squares size)
         mirror (+ (/ squares 2) 1)
         color (if ?color-list?
                   (. ?color-list? (+ (% hash (length ?color-list?)) 1))
