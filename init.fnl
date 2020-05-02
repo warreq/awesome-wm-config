@@ -217,19 +217,20 @@
                      {
                       :screen s
                       :filter awful.widget.taglist.filter.all
-                      :style {:shape gears.shape.circle}
+                      :style {:shape gears.shape.circle :shape_border_width (dpi 4) :shape_border_color "#191A21"}
                       :widget_template (/<
                                         :widget wibox.container.background
                                         :id :background_role
+                                        :margins (dpi 4)
                                         :create_callback
                                         (fn [self c3 i o]
                                           (: self :connect_signal
                                              :mouse::enter
                                              (fn []
-                                               (when (~= self.bg "#ff0000")
+                                               (when (~= self.bg beautiful.taglist_bg_hover)
                                                  (tset self :backup self.bg)
                                                  (tset self :has_backup true))
-                                               (tset self :bg "#ff0000")))
+                                               (tset self :bg beautiful.taglist_bg_hover)))
                                           (: self :connect_signal
                                              :mouse::leave
                                              (fn []
@@ -237,13 +238,12 @@
                                                  (tset self :bg self.backup)))))
                                         (/<
                                          :widget wibox.container.margin
-                                         :left 16
-                                         :right 16
+                                         :margins 10 
                                          (/<
                                           :layout wibox.layout.fixed.horizontal
                                           (/<
                                            :widget wibox.container.margin
-                                           :margins 16 
+                                           :margins 0 
                                            (/<
                                             :id :icon_role
                                             :widget wibox.widget.imagebox))

@@ -1,3 +1,4 @@
+(local gears (require "gears"))
 (local theme-name "dracula")
 (local theme-assets (require "beautiful.theme_assets"))
 (local xresources (require "beautiful.xresources"))
@@ -98,12 +99,31 @@
         :snap_bg xcolors.xcolor8
         })
 
+(local taglist
+       {
+        :taglist_fg_focus core-colors.fg
+        :taglist_bg_focus core-colors.base2
+        :taglist_fg_urgent core-colors.yellow
+        :taglist_bg_urgent core-colors.bg
+        :taglist_fg_occupied core-colors.fg
+        :taglist_bg_occupied core-colors.bg
+        :taglist_fg_empty core-colors.fg
+        :taglist_bg_empty core-colors.bg
+        :taglist_fg_volatile core-colors.fg
+        :taglist_bg_volatile core-colors.bg
+        :taglist_fg_hover core-colors.fg-alt
+        :taglist_bg_hover core-colors.base3
+        :taglist_shape gears.shape.circle
+        :taglist_shape_border_width (dpi 4)
+        :taglist_shape_border_color core-colors.bg
+        })
+
 (local titlebar
        {
-        :titlebar_fg_focus xcolors.xcolor4
-        :titlebar_bg_focus xcolors.xcolor0
-        :titlebar_fg_normal xcolors.xcolor8
-        :titlebar_bg_normal xcolors.xbackground
+        :titlebar_fg_focus core-colors.fg-alt
+        :titlebar_bg_focus core-colors.base3
+        :titlebar_fg_normal core-colors.fg
+        :titlebar_bg_normal core-colors.bg
         })
 
 (local wibar
@@ -277,6 +297,7 @@
         xcolors
         extended-colors
         titlebar
+        taglist
         wibar
         menu
         spacing
