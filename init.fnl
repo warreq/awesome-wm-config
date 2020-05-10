@@ -168,10 +168,8 @@
    (set s.my-calendar
         (awful.popup (/<
                       :shape gears.shape.infobubble
-                      :minimum_height (dpi 200)
-                      :maximum_height (dpi 200)
-                      :minimum_width (dpi 250)
-                      :maximum_width (dpi 250)
+                      :height (dpi 200)
+                      :width (dpi 250)
                       :screen s
                       :ontop true
                       :visible false
@@ -191,68 +189,63 @@
         (wibox.widget (/<
                        :layout wibox.layout.fixed.horizontal
                        (/<
-                        :id "my-textclock"
+                        :format "<b>%b %d %H:%M</b>"
                         :widget wibox.widget.textclock
                         :timezone "Europe/Copenhagen")
                        )))
 
-
    (: s.my-textclock :connect_signal "button::release"
       (fn []
-        (let [screen-x s.geometry.x
-              screen-y s.geometry.y
-              widget-x mouse.current_widget_geometry.x
-              widget-y (dpi mouse.current_widget_geometry.y)
-              widget-width mouse.current_widget_geometry.width
-              widget-center (+ widget-x (/ widget-width 2))
-              popup-width (dpi 250)]
-          (doto s.my-calendar
-            (tset :x (- (+ screen-x widget-center) (/ popup-width 2)))
-            (tset :y (+ s.geometry.y (dpi 32)))
-            (tset :screen s)
-            (tset :visible (not s.my-calendar.visible))))))
+        (awful.placement.next_to
+         s.my-calendar 
+         {:mode :geometry
+          :preferred_positions [:bottom :right :left :top]
+          :preferred_anchors [:middle :back :front]
+          :geometry mouse.current_widget_geometry})
+        (doto s.my-calendar
+          (tset :visible (not s.my-calendar.visible)))))
 
    ;; Create a taglist widget
    (set s.mytaglist (awful.widget.taglist
                      {
                       :screen s
                       :filter awful.widget.taglist.filter.all
-                      :style {:shape gears.shape.circle :shape_border_width (dpi 4) :shape_border_color "#191A21"}
-                      :widget_template (/<
-                                        :widget wibox.container.background
-                                        :id :background_role
-                                        :margins (dpi 4)
-                                        :create_callback
-                                        (fn [self c3 i o]
-                                          (: self :connect_signal
-                                             :mouse::enter
-                                             (fn []
-                                               (when (~= self.bg beautiful.taglist_bg_hover)
-                                                 (tset self :backup self.bg)
-                                                 (tset self :has_backup true))
-                                               (tset self :bg beautiful.taglist_bg_hover)))
-                                          (: self :connect_signal
-                                             :mouse::leave
-                                             (fn []
-                                               (when self.has_backup
-                                                 (tset self :bg self.backup)))))
-                                        (/<
-                                         :widget wibox.container.margin
-                                         :margins 10 
-                                         (/<
-                                          :layout wibox.layout.fixed.horizontal
-                                          (/<
-                                           :widget wibox.container.margin
-                                           :margins 0 
-                                           (/<
-                                            :id :icon_role
-                                            :widget wibox.widget.imagebox))
+                      :widget_template
+                      (/<
+                       :widget wibox.container.background
+                       :id :background_role
+                       :margins (dpi 4)
+                       :create_callback
+                       (fn [self c3 i o]
+                         (: self :connect_signal
+                            :mouse::enter
+                            (fn []
+                              (when (~= self.bg beautiful.taglist_bg_hover)
+                                (tset self :backup self.bg)
+                                (tset self :has_backup true))
+                              (tset self :bg beautiful.taglist_bg_hover)))
+                         (: self :connect_signal
+                            :mouse::leave
+                            (fn []
+                              (when self.has_backup
+                                (tset self :bg self.backup)))))
+                       (/<
+                        :widget wibox.container.margin
+                        :margins 10 
+                        (/<
+                         :layout wibox.layout.fixed.horizontal
+                         (/<
+                          :widget wibox.container.margin
+                          :margins 0 
+                          (/<
+                           :id :icon_role
+                           :widget wibox.widget.imagebox))
                                         ;(/<
                                         ; :id :text_role
                                         ; :widget wibox.widget.textbox)
-                                          (/<
-                                           :id :index_role
-                                           :widget wibox.widget.textbox))))
+                         (/<
+                          :id :index_role
+                          :widget wibox.widget.textbox))))
                       
                       :buttons taglist_buttons
                       
