@@ -83,16 +83,16 @@
         :fg_urgent core-colors.yellow
         :fg_minimize core-colors.base5
 
-        :border_color xcolors.xcolor0
-        :border_normal xcolors.xcolor0
-        :border_focus xcolors.xcolor0
+        :border_color core-colors.base3
+        :border_normal core-colors.base3
+        :border_focus core-colors.base3
 
         :notification_fg xcolors.xcolor15
-        :notification_bg xcolors.xbackground
+        :notification_bg core-colors.base0
 
         :hotkeys_fg xcolors.xcolor15
-        :hotkeys_bg xcolors.xbackground
-        :hotkeys_modifiers_fg xcolors.xcolor4
+        :hotkeys_bg core-colors.base0
+        :hotkeys_modifiers_fg core-colors.violet
         :hotkeys_label_fg xcolors.xcolor8
         :hotkeys_label_bg xcolors.xcolor2
 
@@ -115,7 +115,7 @@
         :taglist_bg_hover core-colors.base3
         :taglist_shape gears.shape.circle
         :taglist_shape_border_width (dpi 4)
-        :taglist_shape_border_color core-colors.bg
+        :taglist_shape_border_color core-colors.black
         })
 
 (local titlebar
@@ -139,13 +139,13 @@
 
         :tasklist_disable_icon true
         :tasklist_plain_task_name true
-        :tasklist_bg_focus xcolors.xcolor0
-        :tasklist_fg_focus xcolors.xcolor4
-        :tasklist_bg_normal xcolors.xcolor0
+        :tasklist_bg_focus core-colors.base3
+        :tasklist_fg_focus core-colors.violet
+        :tasklist_bg_normal core-colors.base3
         :tasklist_fg_normal xcolors.xcolor15
-        :tasklist_bg_minimize xcolors.xcolor0
+        :tasklist_bg_minimize core-colors.base3
         :tasklist_fg_minimize extended-colors.fg_minimize
-        :tasklist_bg_urgent xcolors.xcolor0
+        :tasklist_bg_urgent core-colors.base3
         :tasklist_fg_urgent xcolors.xcolor3
         :tasklist_spacing (dpi 5)
         :tasklist_align :center
@@ -153,11 +153,11 @@
 
 (local menu
        {
-        :menu_bg_normal xcolors.xcolor0
+        :menu_bg_normal core-colors.base3
         :menu_fg_normal xcolors.xcolor7
         :menu_bg_focus xcolors.xcolor8
         :menu_fg_focus xcolors.xcolor7
-        :menu_border_color xcolors.xcolor0
+        :menu_border_color core-colors.base3
         })
 
 (local spacing {

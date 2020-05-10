@@ -1,3 +1,4 @@
+(local widget-utils (require "utils.widgets"))
 (local gears (require "gears"))
 (local awful (require "awful"))
 (require "awful.autofocus")
@@ -194,16 +195,7 @@
                         :timezone "Europe/Copenhagen")
                        )))
 
-   (: s.my-textclock :connect_signal "button::release"
-      (fn []
-        (awful.placement.next_to
-         s.my-calendar 
-         {:mode :geometry
-          :preferred_positions [:bottom :right :left :top]
-          :preferred_anchors [:middle :back :front]
-          :geometry mouse.current_widget_geometry})
-        (doto s.my-calendar
-          (tset :visible (not s.my-calendar.visible)))))
+   (widget-utils.popoverize s.my-textclock s.my-calendar)
 
    ;; Create a taglist widget
    (set s.mytaglist (awful.widget.taglist
@@ -216,19 +208,12 @@
                        :id :background_role
                        :margins (dpi 4)
                        :create_callback
-                       (fn [self c3 i o]
-                         (: self :connect_signal
-                            :mouse::enter
-                            (fn []
-                              (when (~= self.bg beautiful.taglist_bg_hover)
-                                (tset self :backup self.bg)
-                                (tset self :has_backup true))
-                              (tset self :bg beautiful.taglist_bg_hover)))
-                         (: self :connect_signal
-                            :mouse::leave
-                            (fn []
-                              (when self.has_backup
-                                (tset self :bg self.backup)))))
+                       (fn [self _ _ _]
+                         (widget-utils.buttonize
+                          self
+                          (fn [])
+                          {:fg-hover beautiful.taglist_fg_hover
+                           :bg-hover beautiful.taglist_bg_hover}))
                        (/<
                         :widget wibox.container.margin
                         :margins 10 
