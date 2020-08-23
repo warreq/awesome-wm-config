@@ -36,15 +36,15 @@
    - ~~deficon macro~~
    - caching ?
    - more svgs
- - popups need to constrain to screen edges
-   - maybe use the default placement functions or steal their logic?
+ - ~~popups need to constrain to screen edges~~
+   - ~~maybe use the default placement functions or steal their logic?~~
  - inspiration
    - https://www.reddit.com/r/unixporn/comments/atkn5b/awesome_skyfall/
    - https://www.reddit.com/r/unixporn/comments/caiad9/awesomewm_nighty_nordic/
    - https://www.youtube.com/watch?v=_1M1Wv64JGA
    - https://www.reddit.com/r/unixporn/comments/bgfeoh/bspwm_dracula_all_the_things/
    - https://www.reddit.com/r/unixporn/comments/dnsiiq/bspwm_dracula_revamped_for_a_newer_laptop/
-* password integration (gopass + rofi, need some keyring integration i guess?)
+* ~~password integration (gopass + rofi, need some keyring integration i guess?)~~
 * screenshot shortcut
  - just select an area and copy to clipboard
  - optionally save to a dir

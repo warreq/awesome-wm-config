@@ -322,9 +322,9 @@
                           :buttons buttons
                           :layout wibox.layout.fixed.horizontal)
                          (/< ;; Middle
-                          (/< ;; Title
-                           :align "center"
-                           :widget (awful.titlebar.widget.titlewidget c))
+;                          (/< ;; Title
+;                           :align "center"
+;                           :widget (awful.titlebar.widget.titlewidget c))
                           :buttons buttons
                           :layout wibox.layout.flex.horizontal)
                          (/< ;; Right
@@ -346,6 +346,7 @@
                          (set c.border_color beautiful.border_focus)))
 (client.connect_signal "unfocus" (fn [c] (set c.border_color beautiful.border_normal)))
 
+(tset beautiful :wallpaper (.. (gears.filesystem.get_xdg_config_home) "/wallpaper"))
 (wallpaper.enable)
 (workspaces.enable)
 (persistence.enable)

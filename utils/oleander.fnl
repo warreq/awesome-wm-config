@@ -11,4 +11,15 @@
     (table.insert seq i))
   seq)
 
+(fn m.bsd-checksum
+  [str]
+  "Simple checksum. Returns a 32-bit numeric hash of input STR"
+  (var sum 0)
+  (let [bytes [(string.byte str 1 -1)]]
+    (each [_ value (ipairs bytes)]
+      (set sum (+ (rshift sum 1) (lshift sum 31)))
+      (set sum (+ sum value))
+      (set sum (% sum 2147483647))) ; clamp to expected range
+    sum))
+
 m

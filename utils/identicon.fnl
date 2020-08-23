@@ -5,19 +5,9 @@
 (local xml (require "utils.xml"))
 (local oleander (require "utils.oleander"))
 (local range oleander.range)
+(local bsd-checksum oleander.bsd-checksum)
 
 (local identicon {})
-
-(fn bsd-checksum
-  [str]
-  "Simple checksum. Returns a 32-bit numeric hash of input STR"
-  (var sum 0)
-  (let [bytes [(string.byte str 1 -1)]]
-    (each [_ value (ipairs bytes)]
-      (set sum (+ (rshift sum 1) (lshift sum 31)))
-      (set sum (+ sum value))
-      (set sum (% sum 2147483647))) ; clamp to expected range
-    sum))
 
 (fn identicon.color-from-hash [hash]
   (math.randomseed hash)

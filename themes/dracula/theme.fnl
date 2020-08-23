@@ -83,9 +83,9 @@
         :fg_urgent core-colors.yellow
         :fg_minimize core-colors.base5
 
-        :border_color core-colors.base3
-        :border_normal core-colors.base3
-        :border_focus core-colors.base3
+        :border_color core-colors.bg
+        :border_normal core-colors.bg
+        :border_focus core-colors.base5
 
         :notification_fg xcolors.xcolor15
         :notification_bg core-colors.base0
@@ -121,7 +121,7 @@
 (local titlebar
        {
         :titlebar_fg_focus core-colors.fg-alt
-        :titlebar_bg_focus core-colors.base3
+        :titlebar_bg_focus core-colors.bg
         :titlebar_fg_normal core-colors.fg
         :titlebar_bg_normal core-colors.bg
         })
@@ -161,7 +161,7 @@
         })
 
 (local spacing {
-                :border_width (dpi 1)
+                :border_width (dpi 2)
                 :screen_margin (dpi 3) 
                 :useless_gap (dpi 3)
                 :menu_height (dpi 32) 
@@ -282,7 +282,6 @@
         menu
         spacing
         titlebar-buttons
-        layout-buttons
         icons
         fonts
         ))

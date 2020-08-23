@@ -115,6 +115,7 @@ This is similar to `awful.spawn`, but without the callback bug in v4.3-530"
                            :ontop true
                            :sticky true
                            :placement placement
+                           :border_width 0
                            :skip_taskbar true
                            :hidden false
                            :size_hints_honor false
@@ -155,6 +156,7 @@ This is similar to `awful.spawn`, but without the callback bug in v4.3-530"
             placement (gen-placement conf)]
       (tset c :familiar_name conf.name)
       (tset c :is_familiar true)
+      (tset c :border_width 0)
       (tset c :ontop true)
       (tset c :sticky true)
       (tset c :hidden true)

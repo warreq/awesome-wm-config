@@ -7,7 +7,9 @@
 (lambda widget-utils.buttonize [target on-click? ?props]
   "Attach ON-CLICK? callback and stylize TARGET as a button.
 
-PROPS are possible overrides to styles defined in `beautiful.button_*`"
+PROPS are possible overrides to styles defined in `beautiful.button_*`
+
+PROPS.on-hover-in and PROPS.on-hover-out are optional callbacks"
   (let [props (or ?props {})
         bg-hover (or props.bg-hover beautiful.button_bg_hover "#222")
         fg-hover (or props.fg-hover beautiful.button_fg_hover "#eee")
@@ -23,6 +25,10 @@ PROPS are possible overrides to styles defined in `beautiful.button_*`"
                        (fn []
                          (when (. t (.. :has_ key :_backup))
                            (tset t key (. t (.. key :_backup))))))]
+    (when props.on-hover-out
+      (: target :connect_signal :mouse::leave props.on-hover-out))
+    (when props.on-hover-in
+      (: target :connect_signal :mouse::enter props.on-hover-in))
     (: target :connect_signal :mouse::enter (color-in-fn target :bg bg-hover))
     (: target :connect_signal :mouse::enter (color-in-fn target :fg fg-hover))
     (: target :connect_signal :mouse::leave (color-out-fn target :bg))
@@ -41,7 +47,8 @@ PROPS are possible overrides to styles defined in `beautiful.button_*`"
 PROPS contains:
 :preferred-positions -- priority array like [:bottom :right :left :top]
 :preferred-anchors -- priority array like [:middle :back :front]
-overrides to styles defined in `beautiful.button_*`"
+overrides to styles defined in `beautiful.button_*`
+:on-hover-in, :on-hover-out -- optional callbacks to mouse events on TARGET"
   (let [props (or ?props {})
         ppos (or props.preferred-positions [:bottom :right :left :top])
         panc (or props.preferred-anchors [:middle :back :front])]
