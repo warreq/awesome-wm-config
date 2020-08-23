@@ -8,7 +8,7 @@
 (local themes-path (gfs.get_themes_dir))
 (local lume (require "vendor.lume"))
 (local tip (.. (os.getenv "HOME") "/.config/awesome/themes/" theme-name "/titlebar/"))
-(local layout-icon-path (.. themes-path "default/layouts/"))
+(local icon-loader (require "icons.loader"))
 
  ; based on hlissner's doom-dracula emacs theme
 (local core-colors
@@ -270,26 +270,6 @@
   :titlebar_maximized_button_focus_active_hover
   (.. tip "maximized_focus_active_hover.svg")
   })
-
-(local layout-buttons
-       {
-        :layout_fairh (.. layout-icon-path "fairh.png")
-        :layout_fairv (.. layout-icon-path "fairv.png")
-        :layout_floating  (.. layout-icon-path "floating.png")
-        :layout_magnifier (.. layout-icon-path "magnifier.png")
-        :layout_max (.. layout-icon-path "max.png")
-        :layout_fullscreen (.. layout-icon-path "fullscreen.png")
-        :layout_tilebottom (.. layout-icon-path "tilebottom.png")
-        :layout_tileleft   (.. layout-icon-path "tileleft.png")
-        :layout_tile (.. layout-icon-path "tile.png")
-        :layout_tiletop (.. layout-icon-path "tiletop.png")
-        :layout_spiral  (.. layout-icon-path "spiral.png")
-        :layout_dwindle (.. layout-icon-path "dwindle.png")
-        :layout_cornernw (.. layout-icon-path "cornernw.png")
-        :layout_cornerne (.. layout-icon-path "cornerne.png")
-        :layout_cornersw (.. layout-icon-path "cornersw.png")
-        :layout_cornerse (.. layout-icon-path "cornerse.png")
-        })
 
 (local theme
        (lume.merge

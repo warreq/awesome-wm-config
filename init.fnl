@@ -10,8 +10,9 @@
 (local hotkeys_popup (require "awful.hotkeys_popup"))
 (require-macros :awesome-macros)
 (local lume (require "vendor.lume"))
-(local tabler-icons (require "icons.tabler"))
 (local icon-loader (require "icons.loader"))
+(local tabler-icons (require "icons.tabler"))
+(local layout-icons (require "icons.layouts"))
 
 ;; Error handling
 ;; Check if awesome encountered an error during startup and fell back to
@@ -44,6 +45,7 @@
 (local workspaces (require "features.workspaces"))
 (local wallpaper (require "features.wallpaper"))
 (local ws-widgets (require "widgets.workspace-switcher"))
+(local ls-widgets (require "widgets.layout-switcher"))
 
 (require "daemons.battery")
 (require "daemons.cpu")
@@ -67,7 +69,7 @@
 ;; Variable definitions
 
 ;; This is used later as the default terminal and editor to run.
-(var terminal "xterm")
+(var terminal "kitty")
 (var editor (or (os.getenv "EDITOR") "emacs"))
 (var editor_cmd editor)
 
@@ -84,8 +86,15 @@
                                         [ "awesome" myawesomemenu beautiful.awesome_icon ]
                                         [ "open terminal" terminal ]]}))
 
-(global mylauncher (awful.widget.launcher {:image (icon-loader.load :tabler :box {:viewBox "0 0 24 24"})
+(global mylauncher (awful.widget.launcher {:image (icon-loader.load :tabler :grid {:viewBox "0 0 24 24"})
                                            :menu mymainmenu }))
+
+(global launchbutton
+        (widget-utils.buttonize
+         (wibox.widget {:widget wibox.widget.imagebox
+                        :image (icon-loader.load :tabler :grid {:viewBox "0 0 24 24"})})
+                        ;:image (icon-loader.load :tabler :grid {:viewBox "0 0 24 24"})})
+         (fn [] (: mymainmenu :toggle))))
 
 ;; Menubar configuration
 (set menubar.utils.terminal terminal) ;; Set the terminal for applications that require it
@@ -140,16 +149,16 @@
                            awful.layout.suit.tile.left
                            awful.layout.suit.tile.bottom
                            awful.layout.suit.tile.top
-                           ;; awful.layout.suit.fair.horizontal
+                           awful.layout.suit.fair.horizontal
                            awful.layout.suit.spiral
                            awful.layout.suit.spiral.dwindle
                            awful.layout.suit.max
-                           ;; awful.layout.suit.max.fullscreen
+                           ;awful.layout.suit.max.fullscreen
                            awful.layout.suit.magnifier
-                           ;; awful.layout.suit.corner.nw
-                           ;; awful.layout.suit.corner.ne
-                           ;; awful.layout.suit.corner.sw
-                           ;; awful.layout.suit.corner.se
+                           awful.layout.suit.corner.nw
+                           awful.layout.suit.corner.ne
+                           awful.layout.suit.corner.sw
+                           awful.layout.suit.corner.se
                            ])
 
 (awful.screen.connect_for_each_screen
@@ -159,12 +168,13 @@
    (set s.mypromptbox (awful.widget.prompt))
    ;; Create an imagebox widget which will contain an icon indicating which layout we're using.
    ;; We need one layoutbox per screen.
-   (set s.mylayoutbox (awful.widget.layoutbox s))
-   (: s.mylayoutbox :buttons (gears.table.join
-                              (awful.button [] 1 (fn [] (awful.layout.inc 1 s awful.layout.layouts)))
-                              (awful.button [] 3 (fn [] (awful.layout.inc -1 s)))
-                              (awful.button [] 4 (fn [] (awful.layout.inc 1 s)))
-                              (awful.button [] 5 (fn [] (awful.layout.inc -1 s)))))
+   (set s.mylayoutbox ls-widgets.switcher)
+;   (set s.mylayoutbox (awful.widget.layoutbox s))
+;   (: s.mylayoutbox :buttons (gears.table.join
+;                              (awful.button [] 1 (fn [] (awful.layout.inc 1 s awful.layout.layouts)))
+;                              (awful.button [] 3 (fn [] (awful.layout.inc -1 s)))
+;                              (awful.button [] 4 (fn [] (awful.layout.inc 1 s)))
+;                              (awful.button [] 5 (fn [] (awful.layout.inc -1 s)))))
 
    (set s.my-calendar
         (awful.popup (/<
@@ -251,7 +261,7 @@
                         :layout wibox.layout.align.horizontal
                         (/< ;; Left widgets
                          :layout wibox.layout.fixed.horizontal
-                         mylauncher
+                         launchbutton
                          (/<
                           :widget wibox.container.margin
                           :margins (dpi 4)
@@ -331,7 +341,9 @@
                        (fn [c]
                          (: c :emit_signal "request::activate"  "mouse_enter" {:raise false})))
 
-(client.connect_signal "focus" (fn [c] (set c.border_color beautiful.border_focus)))
+(client.connect_signal "focus"
+                       (fn [c]
+                         (set c.border_color beautiful.border_focus)))
 (client.connect_signal "unfocus" (fn [c] (set c.border_color beautiful.border_normal)))
 
 (wallpaper.enable)

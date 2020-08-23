@@ -83,6 +83,14 @@
    (input.key-group
     "exec"
     [[:mod] :space (fn [] (awful.util.spawn "rofi -show run")) "app launcher"]
+    [[:mod] :e (fn [] (awful.util.spawn "emacsclient -c -n -e '(switch-to-buffer nil)'")) "emacs"]
+    [[:mod] :v (fn []
+                 (let [option "gopass ls --flat"
+                       prompt "rofi -dmenu -p pass"
+                       action "xargs --no-run-if-empty gopass show -c"
+                       cmd (.. option " | " prompt " | " action)]
+                   (awful.spawn.easy_async_with_shell cmd (fn []))))
+     "secret vault"]
     [[:mod] :Return (fn [] (awful.spawn "alacritty")) "open terminal"]
     [[] :XF86AudioMute pa.toggle-muted "⏼ audio muted"]
     [[] :XF86AudioMicMute pa.toggle-mic-mute "⏼ mic muted"]

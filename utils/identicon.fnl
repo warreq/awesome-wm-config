@@ -8,12 +8,6 @@
 
 (local identicon {})
 
-(fn lshift [n bits]
-  (* (math.floor n) (^ 2 bits)))
-
-(fn rshift [n bits]
-  (math.floor (/ (math.floor n) (^ 2 bits))))
-
 (fn bsd-checksum
   [str]
   "Simple checksum. Returns a 32-bit numeric hash of input STR"

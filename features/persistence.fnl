@@ -127,9 +127,9 @@
                      :icon t.icon
                      :column_count t.column-count
                      }))
-        (each [_ client (ipairs clients)]
-          (when (lume.match t.window-ids (fn [wid] (= wid client.window)))
-            (: client :move_to_tag tag)))))))
+        (each [_ c (ipairs clients)]
+          (when (lume.match t.window-ids (fn [wid] (= wid c.window)))
+            (: c :move_to_tag tag)))))))
 
 (persistence.register "tags" save-tags load-tags)
 

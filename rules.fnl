@@ -21,6 +21,7 @@
                 }
    }
 
+ 
   ;; Floating clients.
   {
    :rule_any {
@@ -64,6 +65,19 @@
    :rule_any {:role [ "PictureInPicture" ] }
    :properties {
                 :placement awful.placement.bottom_right
+                }
+   }
+  {
+   :rule_any {:name ["*Minibuf-0*"]}
+   :properties {
+                :placement awful.placement.bottom_left
+                :height 20
+                :width 1920
+                :floating true
+                :honor_padding true
+                :honor_workarea true
+                :requests_no_titlebar true
+                :titlebars_enabled false
                 }
    }
 
