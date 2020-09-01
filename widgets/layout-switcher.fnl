@@ -18,14 +18,15 @@
 (set ls.on-click
      (fn []
        (awful.layout.inc 1 (awful.screen.focused) awful.layout.layouts)
-       (ls.reset)))
+       (ls.on-hover-in)))
 
 (set ls.on-hover-in
      (fn []
        (let [img (icon-loader.load
                   :layouts
                   (awful.layout.getname)
-                  {:stroke-color beautiful.base6})]
+                  {:stroke-color beautiful.fg
+                   :fill beautiful.fg})]
          (tset ls.switcher :image img))))
 
 (set ls.switcher
