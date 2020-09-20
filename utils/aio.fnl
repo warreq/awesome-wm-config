@@ -1,6 +1,6 @@
 ;; Functions for doing asynchronous IO
-(global awful (require "awful"))
-(global deferred (require "vendor.deferred"))
+(local awful (require "awful"))
+(local deferred (require "vendor.deferred"))
 
 (local aio {})
 

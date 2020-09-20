@@ -30,11 +30,11 @@
   - network status
   - ~~pulseaudio status (vol, sinks?)~~
 * a e s t h e t i c s (especially the bar omg ew)
- - svg handling
+ - ~~svg handling~~
    - ~~loader~~
    - ~~identicons~~
    - ~~deficon macro~~
-   - caching ?
+   - ~~caching ?~~
    - more svgs
  - ~~popups need to constrain to screen edges~~
    - ~~maybe use the default placement functions or steal their logic?~~
@@ -55,6 +55,7 @@
    - allow moving clients between tags in a similar way
 * script for bringing a random window into current tag via rofi
  - see https://github.com/elenapan/dotfiles/blob/997650801a7f6a60b1c1753f40e5f610669a1b2c/config/awesome/helpers.lua#L104
+ - yoink and yeet
 * pulseaudio ui/config ?
  - single output device across all streams pls
  - make WF1000MX3 stop connecting as a damm headset

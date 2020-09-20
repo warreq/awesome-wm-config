@@ -1,4 +1,5 @@
 (local widget-utils (require "utils.widgets"))
+(local view (require "fennelview"))
 (local gears (require "gears"))
 (local awful (require "awful"))
 (require "awful.autofocus")
@@ -13,6 +14,8 @@
 (local icon-loader (require "icons.loader"))
 (local tabler-icons (require "icons.tabler"))
 (local layout-icons (require "icons.layouts"))
+(import-macros {: async : await } :utils.async)
+;;(local await (require "utils.await"))
 
 ;; Error handling
 ;; Check if awesome encountered an error during startup and fell back to
@@ -22,35 +25,6 @@
   (naughty.notify {:preset err_preset
                    :title "Oops, there were errors during startup!"
                    :text awesome.startup_errors}))
-
-(local dpi xresources.apply_dpi)
-
-(local output (require "utils.output"))
-(local notify output.notify)
-(local tag-utils (require "utils.tags"))
-
-(local theme-dir (.. (os.getenv "HOME") "/.config/awesome/themes/"))
-(local theme-name "dracula")
-(local theme (require (.. "themes." theme-name ".theme")))
-(local deffamiliar (require "features.familiar"))
-
-(beautiful.init theme)
-
-(global rofi (require "features.rofi"))
-
-(local input (require "utils.input"))
-(local keybindings (require "keybindings"))
-(local rules (require "rules"))
-(local persistence (require "features.persistence"))
-(local workspaces (require "features.workspaces"))
-(local wallpaper (require "features.wallpaper"))
-(local ws-widgets (require "widgets.workspace-switcher"))
-(local ls-widgets (require "widgets.layout-switcher"))
-
-(require "daemons.battery")
-(require "daemons.cpu")
-(require "daemons.ram")
-(require "daemons.pulseaudio")
 
 ;; Handle runtime errors after startup
 (do
@@ -66,6 +40,41 @@
                         :text (tostring err)})
        (set in_error false)))))
 
+(local dpi xresources.apply_dpi)
+
+(local output (require "utils.output"))
+(local notify output.notify)
+(local tag-utils (require "utils.tags"))
+
+(local theme-dir (.. (os.getenv "HOME") "/.config/awesome/themes/"))
+(local theme-name "dracula")
+(local theme (require (.. "themes." theme-name ".theme")))
+(local deffamiliar (require "features.familiar"))
+(local xml (require :utils.xml))
+(local input (require :utils.input))
+(local {: geo : notify : ext } (require :api.lawful))
+(local pango xml.create-elements)
+(local defbroom (require :modules.broom))
+
+(beautiful.init theme)
+
+(local rofi (require "features.rofi"))
+
+(local input (require "utils.input"))
+(local launcher (require "plauncher"))
+(local keybindings (require "keybindings"))
+(local rules (require "rules"))
+(local persistence (require "features.persistence"))
+(local workspaces (require "features.workspaces"))
+(local wallpaper (require "features.wallpaper"))
+(local ws-widgets (require "widgets.workspace-switcher"))
+(local ls-widgets (require "widgets.layout-switcher"))
+
+(require "daemons.battery")
+(require "daemons.cpu")
+(require "daemons.ram")
+(require "daemons.pulseaudio")
+
 ;; Variable definitions
 
 ;; This is used later as the default terminal and editor to run.
@@ -75,14 +84,14 @@
 
 ;; Menu
 ;; Create a launcher widget and a main menu
-(global myawesomemenu [ 
+(local myawesomemenu [
                        [ "hotkeys" (fn [] (hotkeys_popup.show_help nil (awful.screen.focused))) ]
                        [ "manual" (.. terminal " -e man awesome") ]
                        [ "edit config" (.. editor_cmd " " awesome.conffile) ]
                        [ "restart" awesome.restart ]
                        [ "quit" (fn [] (awesome.quit)) ]])
 
-(global mymainmenu (awful.menu {:items [
+(local mymainmenu (awful.menu {:items [
                                         [ "awesome" myawesomemenu beautiful.awesome_icon ]
                                         [ "open terminal" terminal ]]}))
 
@@ -165,7 +174,7 @@
  (fn [s]
    ;; Wibar
    ;; Create a promptbox for each screen
-   (set s.mypromptbox (awful.widget.prompt))
+   ;(set s.mypromptbox (awful.widget.prompt))
    ;; Create an imagebox widget which will contain an icon indicating which layout we're using.
    ;; We need one layoutbox per screen.
    (set s.mylayoutbox ls-widgets.switcher)
@@ -369,6 +378,37 @@
               :placement :right
               :screen-ratio 0.70})
 
+(defbroom
+ {
+  :name "applauncher"
+  :key [[:mod] :a]
+  :prompt "Run: "
+  :placement geo.centered
+  :max-displayed 20
+  :option-generator
+  (fn []
+    (lume.split
+     (ext.shellout! "comm -23 <(compgen -c | sort) <(compgen -abdefgjksuv | sort) | sort | uniq")
+     "\n"))
+  :option-template
+  (fn [content selected?]
+    {:layout wibox.layout.flex.horizontal
+     1 {:image (icon-loader.load :tabler :grid {:viewBox "0 0 24 24"})
+        :widget wibox.widget.imagebox}
+     2 {:markup (pango [:span
+                        {:foreground (if selected? "red" "blue")}
+                        content])
+        :widget wibox.widget.textbox}})
+  :hooks
+  (fn [exit-fn]
+    [
+     [[] :Return (fn [cmd]
+                   (ext.spawn cmd)
+                   (exit-fn))]
+     [[:Shift] :Return (fn [cmd]
+                         (ext.spawn (.. terminal " -e " cmd))
+                         (exit-fn))]])})
+
 (awesome.connect_signal
  :startup
  (fn []
@@ -378,4 +418,5 @@
       (when (= (# (tag-utils.list-visible s)) 0)
         (tag-utils.create s (. awful.layout.layouts 1)))))))
 
+(icon-loader.clear-cache)
 

@@ -1,5 +1,6 @@
 (local awful (require "awful"))
 (local lume (require "vendor.lume"))
+(local unpack (or table.unpack _G.unpack))
 
 (var input {})
 
@@ -45,7 +46,7 @@
   [group ...]
   (let [map-key-group (partial input.keybind group)]
     (-> [...]
-        (lume.map (fn [k] (map-key-group (table.unpack k))))
+        (lume.map (fn [k] (map-key-group (unpack k))))
         (lume.reduce (fn [a b] (lume.concat a b)) [])
         (values))))
 

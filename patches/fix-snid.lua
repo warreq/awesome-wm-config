@@ -18,7 +18,8 @@ local function fix_startup_id(c)
     -- It will only work on Linux, that's already 99% of the userbase.
     if not f then return end
 
-    local value = _VERSION <= "Lua 5.1" and "([^\z]*)\0" or "([^\0]*)\0"
+    local value = "%d+\0"
+
     local snid = f:read("*all"):match("STARTUP_ID=" .. value)
     f:close()
 
@@ -29,8 +30,8 @@ local function fix_startup_id(c)
     if blacklisted_snid[snid] then return end
 
     if snid then
-	c.startup_id = snid
-	blacklisted_snid[snid] = c
+    c.startup_id = snid
+    blacklisted_snid[snid] = c
     end
 end
 

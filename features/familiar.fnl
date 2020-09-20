@@ -29,13 +29,12 @@
 ;; die too, but sometimes it doesn't.”
 ;; -- Henry Kuttner, “Before I Wake”
 
-(require "patches.fix-snid")
 (local awful (require "awful"))
 (local lume (require "vendor.lume"))
-(local gears (require "gears"))
 (local input (require "utils.input"))
-(local output (require "utils.output"))
 (local persistence (require "features.persistence"))
+(local {: ext : geo} (require "api.lawful"))
+(local {: concat } (require "utils.oleander"))
 
 (local fam {})
 
@@ -44,39 +43,7 @@
                          :screen-ratio 0.33
                          })
 
-(set fam.spawnbuf {})
-
 (set fam.collection {})
-
-(lambda spawn [cmd props ?cb]
-  "Spawn application with CMD and set PROPS on resulting client. 
-Execute callback ?CB if provided, passing the client as the only argument.
-This is similar to `awful.spawn`, but without the callback bug in v4.3-530"
-  (let [(pid snid) (awesome.spawn cmd true)]
-    (when snid
-      (tset fam.spawnbuf snid [props ?cb]))
-    (values pid snid)))
-
-;; this signal connection is for use with `spawn` --
-;; it correlates the snid in the buffer and applies the properties to the client
-(client.connect_signal
- "manage"
- (fn [c]
-   (when c.startup_id
-     (let [snid c.startup_id
-           snid-data (. fam.spawnbuf snid)]
-       (when snid-data
-         (let [props (. snid-data 1)
-               ?cb (. snid-data 2)]
-           (each [k v (pairs props)]
-             (tset c k v))
-           (when (= (. props :titlebars_enabled) false)
-             (awful.titlebar.hide c))
-           (when (. props :placement) ; apply placement
-             ((. props :placement) c))
-           (when ?cb
-             (?cb c))
-           (tset fam.spawnbuf snid nil)))))))
 
 (lambda tag-familiar [conf]
   "Return a function for capturing a familiar's window ID after it has mapped"
@@ -99,15 +66,15 @@ This is similar to `awful.spawn`, but without the callback bug in v4.3-530"
   "Generate a placement function based on a familiar's config"
   (fn [c]
     (let [axis (axis-from-dir conf.placement)
-          p (+ awful.placement.scale
-               (. awful.placement conf.placement)
-               (. awful.placement (.. "maximize_" axis "ly")))]
+          p (+ geo.scale
+               (. geo conf.placement)
+               (. geo (.. "maximize_" axis "ly")))]
       (p c {:to_percent conf.screen-ratio :honor_workarea false}))))
 
 (lambda summon-familiar [conf]
   "Summon familiar with configuration CONF"
   (let [placement (gen-placement conf)
-        (pid snid) (spawn conf.command
+        (pid snid) (ext.spawn conf.command
                           {
                            :is_familiar true
                            :familiar_name conf.name
@@ -180,6 +147,6 @@ CONF has properties --
         toggle-fn (fn [] (toggle-familiar merge-conf))
         [mods key] conf.key
         binding (input.keybind category mods key toggle-fn description)]
-    (root.keys (gears.table.join (root.keys) binding))))
+    (root.keys (concat (root.keys) binding))))
 
 fam.def

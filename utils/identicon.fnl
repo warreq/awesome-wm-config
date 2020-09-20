@@ -32,9 +32,9 @@
              seq
              [:rect {:x x :y y :width l :height l :fill color}])
             (when (~= i (- mirror 1)) ; no need to reflect the center column
-                (table.insert
-                 seq
-                 [:rect {:x x2 :y y :width l :height l :fill color}])))))))
+              (table.insert
+               seq
+               [:rect {:x x2 :y y :width l :height l :fill color}])))))))
   seq)
 
 (lambda identicon.generate-svg
