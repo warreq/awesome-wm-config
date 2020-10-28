@@ -17,6 +17,14 @@
     (table.insert seq i))
   seq)
 
+(lambda m.fill
+  [start end value]
+  "Create a table with keys from START to END where each value is VALUE"
+  (var seq [])
+  (for [i start end]
+    (table.insert seq i value))
+  seq)
+
 ;; try to 'polyfill' the best available bitwise operators
 (local bit (m.require? "bitop"))
 (local blshift (when bit bit.lshift))
@@ -58,52 +66,5 @@
                     (tset ret k v))))
             (error (.. "Expected table, got " tv)))))
     ret))
-
-(fn m.init-matrix [n m ?v]
-  "Return an initialized N-by-M matrix where each element is ?V.
-Default initialization value is 0."
-  (var matrix [])
-  (let [v (if ?v ?v 0)]
-    (for [i 0 n 1]
-      (tset matrix i [])
-      (tset (. matrix i) v i))
-    (for [j 0 m 1]
-      (tset (. matrix v) j j))
-    matrix))
-
-(fn m.levenshtein [str-a str-b]
-  "Calculate the levenshtein distance between STR-A and STR-B"
-  (let [len-a (string.len str-a)
-        len-b (string.len str-b)]
-    (var matrix (m.init-matrix len-a len-b))
-
-    (for [i 1 len-a 1]
-      (for [j 1 len-b 1]
-        (let [sub-cost (if (= (str-a:byte i) (str-b:byte j)) 0 2)
-              del-dist (+ (. (. matrix (- i 1)) j) 1); deletion
-              ins-dist (+ (. (. matrix i) (- j 1)) 1); insertion
-              sub-dist (+ (. (. matrix (- i 1)) (- j 1)) sub-cost)]; substitution
-          (tset (. matrix i) j (math.min del-dist ins-dist sub-dist)))))
-
-    (. (. matrix len-a) len-b)))
-
-(fn m.min-edit-distance [str-a str-b ?algorithm]
-  "Find minimum edit distance of STR-A and STR-B via provided ?ALGORITHM.
-If no algorithm is provided, defaults to levenshtein distance."
-  (let [len-a (string.len str-a)
-        len-b (string.len str-b)
-        algorithm (or ?algorithm m.levenshtein)]
-
-    ;; short-circuit to save time
-    (if (= len-a 0)
-        len-a
-
-        (= len-b 0)
-        len-b
-
-        (= str-a str-b)
-        0
-
-        (algorithm str-a str-b))))
 
 m

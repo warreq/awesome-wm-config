@@ -18,6 +18,7 @@
 ;; use persistence to store last X choices at top
 ;;
 (local {: ext : geo : notify} (require :api.lawful))
+(local pp (require :fennelview))
 (import-macros {: async : await } :utils.async)
 (local {: concat } (require :utils.oleander))
 (local xresources (require :beautiful.xresources))
@@ -25,15 +26,22 @@
 (local dpi xresources.apply_dpi)
 (local wibox (require :wibox))
 (local xml (require :utils.xml))
+(local hotfuzz (require :utils.hotfuzz))
+(local persistence (require :features.persistence))
 (local input (require :utils.input))
 (local pango xml.create-elements)
 (local lume (require :vendor.lume))
 
 (local empty-completion-widget
-       {:layout wibox.layout.flex.vertical
-;        13 {:widget wibox.widget.textbox :text "lol sukker"}
-;        14 {:widget wibox.widget.textbox :text "show me ur moves"}})
-        })
+       {:layout wibox.layout.flex.vertical})
+
+(var history {})
+
+(fn save-history []
+  history)
+
+(fn load-history [map]
+  (set history map))
 
 (fn broom-ui [scr conf]
   (awful.popup
@@ -75,11 +83,22 @@
         (: :get_children)
         (. 2)))
 
+  (fn broombox.save-history []
+    (var hist (or (. history broombox.key) []))
+    (let [sel (. broombox.options broombox.selection)
+          existing (lume.filter hist (fn [x] (= x sel)))]
+      (when (~= nil sel)
+        (when (~= nil existing)
+          (lume.remove hist sel))
+        (table.insert hist 1 sel))
+      (tset history broombox.key hist)))
+
   (fn broombox.open []
     (set broombox.visible true)
     (set broombox.ontop true))
 
   (fn broombox.close []
+    (broombox.save-history)
     (set broombox.visible false)
     (tset (broombox.get-prompt-widget) :markup ""))
 
@@ -94,25 +113,30 @@
     (compl-widget:set_children (concat empty-completion-widget widgets)))
 
   (fn broombox.filter-options [txt]
-    (if (not txt)
+    (var compl-widget (broombox.get-completion-widget))
+    (if (or (not txt) (= txt ""))
         (do
-          ;; TODO: empty text should cause display of history
-          (set broombox.options (lume.slice broombox.opt-cache 0 conf.max-displayed))
-          (broombox.template-options))
-        ;; TODO: replace dumb filter fn with levenshtein distance
-        (let [opts (lume.filter broombox.opt-cache (fn [o] (string.find o txt)))]
-          (notify.info (# opts))
-          (var compl-widget (broombox.get-completion-widget))
-          (set broombox.options opts)
+          (tset history broombox.key (or (. history broombox.key) []))
+          (set broombox.options (. history broombox.key)))
+        (let [fuzconf {:threshold .6}
+              fuzz (hotfuzz.search broombox.opt-cache txt fuzconf broombox.trie)
+              {: trie : results } fuzz
+              opts (-> results
+                       (lume.map (fn [x] => x.value))
+                       (lume.first conf.max-displayed))]
+          (set broombox.trie trie)
+          (set broombox.options opts)))
+    (do
+      (if (> (# broombox.options) 0)
           (do
-            (if (> (# broombox.options) 0)
-                (do
-                  (when (< broombox.selection 1)
-                    (set broombox.selection 1))
-                  (broombox.template-options))
-                (compl-widget:set_children []))))))
-  (tset scr broomkey broombox)
-  (. scr broomkey))
+            (when (< broombox.selection 1)
+              (set broombox.selection 1))
+            (broombox.template-options))
+          (compl-widget:set_children []))))
+
+    (tset scr broomkey broombox)
+    (. scr broomkey))
+
 
 (fn defbroom [conf]
   "Define a broom with properties map CONF.
@@ -128,7 +152,8 @@ CONF has properties --
 :on-select
 :on-cancel
 :on-change
-:hooks
+:on-return
+:on-shift-return
 "
   (awesome.connect_signal
    :startup
@@ -139,9 +164,9 @@ CONF has properties --
       (fn [s]
         (local b (broombox-init s conf broom-screen-key))
 
+
         (fn b.run [self]
           (set b.opt-cache (conf.option-generator))
-          (set b.options b.opt-cache)
           (b.filter-options)
           (b.open)
           (awful.prompt.run
@@ -151,7 +176,21 @@ CONF has properties --
               (b.filter-options cmd))
             :done_callback b.close
             :hooks
-            (conf.hooks b.close)
+            [
+             [[] :Return (fn [cmd]
+                           (let [value (or
+                                        (. b.options b.selection)
+                                        cmd
+                                        "")]
+                             (conf.on-return value)
+                             (b.close)))]
+             [[:Shift] :Return (fn [cmd]
+                                 (let [value (or
+                                              (. b.options b.selection)
+                                              cmd
+                                              "")]
+                                   (conf.on-shift-return value)
+                                   (b.close)))]]
             :keypressed_callback
             (fn [mod key cmd]
               (if (= key :Up)
@@ -163,7 +202,7 @@ CONF has properties --
                   (when (< b.selection (# b.options))
                     (set b.selection (+ b.selection 1)))
                   (= key :Return)
-                  nil ; leave open for caller-supplied hooks
+                  nil ; leave open for hooks
                   (= key :BackSpace)
                   (set b.selection 1)
                   (string.match key "[a-zA-Z0-9]{1}")
@@ -180,5 +219,7 @@ CONF has properties --
            [mods key] conf.key
            binding (input.keybind category mods key run-fn description)]
        (root.keys (concat (root.keys) binding))))))
+
+(persistence.register "brooms" save-history load-history true)
 
 defbroom

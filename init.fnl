@@ -393,21 +393,14 @@
   :option-template
   (fn [content selected?]
     {:layout wibox.layout.flex.horizontal
-     1 {:image (icon-loader.load :tabler :grid {:viewBox "0 0 24 24"})
-        :widget wibox.widget.imagebox}
+;     1 {:image (icon-loader.load :tabler :grid {:viewBox "0 0 24 24"})
+;        :widget wibox.widget.imagebox}
      2 {:markup (pango [:span
-                        {:foreground (if selected? "red" "blue")}
+                        {:foreground (if selected? "white" "gray")}
                         content])
         :widget wibox.widget.textbox}})
-  :hooks
-  (fn [exit-fn]
-    [
-     [[] :Return (fn [cmd]
-                   (ext.spawn cmd)
-                   (exit-fn))]
-     [[:Shift] :Return (fn [cmd]
-                         (ext.spawn (.. terminal " -e " cmd))
-                         (exit-fn))]])})
+  :on-return (fn [cmd] (ext.spawn cmd))
+  :on-shift-return (fn [cmd] (ext.spawn (.. terminal " -e " cmd)))})
 
 (awesome.connect_signal
  :startup
