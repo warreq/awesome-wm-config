@@ -3,18 +3,6 @@
 (local {: concat : range : fill } (require "utils.oleander"))
 (local m {})
 
-(fn m.init-matrix [n m ?v]
-  "Return an initialized N-by-M matrix where each element is ?V.
-Default initialization value is 0."
-  (var matrix [])
-  (let [v (if ?v ?v 0)]
-    (for [i 0 n 1]
-      (tset matrix i [])
-      (tset (. matrix i) v i))
-    (for [j 0 m 1]
-      (tset (. matrix v) j j))
-    matrix))
-
 (fn m.init-seller-matrix [n m]
   "Return an initialized N-by-M matrix for doing Seller's algorithm."
   (var matrix [])
@@ -47,59 +35,6 @@ Write the cost at position (I,J) in the given MATRIX for STR-A and STR-B"
     (for [i 2 (+ 1 len-a) 1]
       (m.levenshtein-dist str-a str-b matrix i j))
     matrix))
-
-(fn m.levenshtein [str-a str-b]
-  "Calculate the levenshtein distance between STR-A and STR-B"
-  (let [len-a (string.len str-a)
-        len-b (string.len str-b)]
-    (var matrix (m.init-matrix len-a len-b))
-
-    (for [j 1 len-b 1]
-      (m.levenshtein-col str-a str-b matrix j))
-    (. (. matrix len-a) len-b)))
-
-(fn m.min-edit-distance [str-a str-b ?algorithm]
-  "Find minimum edit distance of STR-A and STR-B via provided ?ALGORITHM.
-If no algorithm is provided, defaults to levenshtein distance."
-  (let [len-a (string.len str-a)
-        len-b (string.len str-b)
-        algorithm (or ?algorithm m.levenshtein)]
-
-    ;; short-circuit to save time
-    (if (= len-a 0)
-        len-a
-
-        (= len-b 0)
-        len-b
-
-        (= str-a str-b)
-        0
-
-        (algorithm str-a str-b))))
-
-(fn m.edit-distance-comparator [target-str ?algorithm]
-  "Return a comparator function that can be used to sort strings by their
-minimum-edit-distance from TARGET-STR using provided ?ALGORITHM.
-If no algorithm is provided, defaults to levenshtein distance."
-  (fn [str-a str-b]
-    (let [dist-a (m.min-edit-distance target-str str-a ?algorithm)
-          dist-b (m.min-edit-distance target-str str-b ?algorithm)]
-      (< dist-a dist-b))))
-
-(fn seller-score [matrix len]
-  (if (= (length matrix 1)
-         {:score 1 :index 0} ; empty string -- perfect score
-         (do
-           (local last-row (. matrix (length matrix)))
-           (var min-v (. last-row 1))
-           (var min-i 0)
-           (for [i 1 len]
-             (var val (. last-row i))
-             (when (< val min-v)
-               (set min-v val)
-               (set min-i i)))
-           {:score (- 1 (/ min-v (length matrix)))
-            :index min-i}))))
 
 (lambda m.trie-insert [trie text item]
   (var walker trie)
