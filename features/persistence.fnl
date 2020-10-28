@@ -2,7 +2,7 @@
 (local json (require "vendor.json"))
 (local lume (require "vendor.lume"))
 (local screen-utils (require "utils.screens"))
-(local output (require "utils.output"))
+(local { : notify} (require :api.lawful))
 
 (local persistence {})
 
@@ -25,7 +25,7 @@
   (match (io.open (.. path "/" filename) "r")
     [nil err] (do (write-file path filename "{}")
                   (match (io.open (.. path "/" filename) "r")
-                    [nil err] (output.notify err)
+                    [nil err] (notify.err err)
                     f (: f :read "*all")))
     f (: f :read "*all")))
 
@@ -64,11 +64,11 @@
               (if perma-file (json.decode perma-file) {})
               {})]
     (each [_ sub (ipairs subscribers)]
-      (let [data (or sub.perma p s)]
+      (let [data (if sub.perma p s)]
         (when data
           (awesome.emit_signal
            (.. signame sub.name "::" "loading"))
-          (sub.on-load (or (. s sub.name) {}))
+          (sub.on-load (or (. data sub.name) {}))
           (awesome.emit_signal
            (.. signame sub.name "::" "loaded")))))
     (awesome.emit_signal (.. signame "loaded"))))
