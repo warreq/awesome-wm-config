@@ -14,9 +14,7 @@
 ;;
 ;; Similar to programs like `rofi` or `Synapse`, but built into the wm for
 ;; maximum integration and customization.
-;;
-;; use persistence to store last X choices at top
-;;
+
 (local {: ext : geo : notify} (require :api.lawful))
 (local pp (require :fennelview))
 (import-macros {: async : await } :utils.async)
@@ -29,7 +27,6 @@
 (local hotfuzz (require :utils.hotfuzz))
 (local persistence (require :features.persistence))
 (local input (require :utils.input))
-(local pango xml.create-elements)
 (local lume (require :vendor.lume))
 
 (local empty-completion-widget
@@ -85,7 +82,7 @@
 
   (fn broombox.save-history []
     (var hist (or (. history broombox.key) []))
-    (let [sel (. broombox.options broombox.selection)
+    (let [sel (-> broombox.options (. broombox.selection) (. :value))
           existing (lume.filter hist (fn [x] (= x sel)))]
       (when (~= nil sel)
         (when (~= nil existing)
@@ -106,10 +103,12 @@
     (var compl-widget (broombox.get-completion-widget))
     (var widgets [])
     (each [i v (ipairs (lume.slice broombox.options 0 conf.max-displayed))]
-      (table.insert
-       widgets
-       i
-       (conf.option-template v (= i broombox.selection))))
+      (let [{: value : hit } v
+            selected? (= i broombox.selection)]
+        (table.insert
+         widgets
+         i
+         (conf.option-template value selected? hit))))
     (compl-widget:set_children (concat empty-completion-widget widgets)))
 
   (fn broombox.filter-options [txt]
@@ -117,13 +116,11 @@
     (if (or (not txt) (= txt ""))
         (do
           (tset history broombox.key (or (. history broombox.key) []))
-          (set broombox.options (. history broombox.key)))
+          (set broombox.options (lume.map (. history broombox.key) (fn [x] {:value x}))))
         (let [fuzconf {:threshold .6}
               fuzz (hotfuzz.search broombox.opt-cache txt fuzconf broombox.trie)
               {: trie : results } fuzz
-              opts (-> results
-                       (lume.map (fn [x] => x.value))
-                       (lume.first conf.max-displayed))]
+              opts (lume.first results conf.max-displayed)]
           (set broombox.trie trie)
           (set broombox.options opts)))
     (do
@@ -163,8 +160,6 @@ CONF has properties --
      (awful.screen.connect_for_each_screen
       (fn [s]
         (local b (broombox-init s conf broom-screen-key))
-
-
         (fn b.run [self]
           (set b.opt-cache (conf.option-generator))
           (b.filter-options)
@@ -177,20 +172,24 @@ CONF has properties --
             :done_callback b.close
             :hooks
             [
-             [[] :Return (fn [cmd]
-                           (let [value (or
-                                        (. b.options b.selection)
-                                        cmd
-                                        "")]
-                             (conf.on-return value)
-                             (b.close)))]
-             [[:Shift] :Return (fn [cmd]
-                                 (let [value (or
-                                              (. b.options b.selection)
-                                              cmd
-                                              "")]
-                                   (conf.on-shift-return value)
-                                   (b.close)))]]
+             [[] :Return
+              (fn [cmd]
+                (let [value (or
+                             (-> b.options (. b.selection) (. :value))
+                             cmd
+                             "")]
+                  (conf.on-return value)
+                  (b.close)))]
+             [[:Shift] :Return
+              (fn [cmd]
+                (let [value (or
+                             (-> b.options (. b.selection) (. :value))
+                             cmd
+                             "")
+                      ;; fire on-return if no on-shift-return
+                      handler (or conf.on-shift-return conf.on-return)]
+                  (handler value)
+                  (b.close)))]]
             :keypressed_callback
             (fn [mod key cmd]
               (if (= key :Up)

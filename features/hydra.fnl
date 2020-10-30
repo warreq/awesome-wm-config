@@ -43,7 +43,7 @@
 (local lume (require "vendor.lume"))
 (local xml (require "utils.xml"))
 (local output (require "utils.output"))
-(local pango xml.create-elements)
+(local pango xml.create-element)
 
 (fn conf [s] (. (beautiful.get) s))
 
@@ -97,20 +97,20 @@ keygrabber API expects."
 
 (fn hydra-title-bar [body]
   (pango
-   [:span {:size :xx-large :stretch :ultraexpanded :foreground style.fg_color}
-    body.name]))
+   :span {:size :xx-large :stretch :ultraexpanded :foreground style.fg_color}
+    body.name))
 
 (fn head-knot-template [head-knot]
   (let [title (. head-knot 1)
         heads (lume.slice head-knot 2)
         letters (-> heads
                     (lume.map (fn [h]
-                                (pango [:span {:foreground (head-color h)}
-                                        (.. (. h 1) ". ")]
-                                       [:span {}
-                                        (.. (. h 3) "\n")])))
+                                (.. (pango :span {:foreground (head-color h)}
+                                            (.. (. h 1) ". "))
+                                    (pango :span {}
+                                            (.. (. h 3) "\n")))))
                     (lume.reduce (fn [a b] (.. a b))))]
-    (.. (pango [:span {:variant :smallcaps} title]) "\n\n" letters)))
+    (.. (pango :span {:variant :smallcaps} title) "\n\n" letters)))
 
 (fn create-hydra-ui [body head-knots]
   "Take the hydra BODY and generate an informative modal widget, where

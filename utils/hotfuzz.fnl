@@ -175,7 +175,7 @@ avoid recalculating the entire prefix-tree."
          result-map
          cand
          0
-         {:index 0 :length 0}
+         {:start 1 :end (length cand)}
          (length term))))
 
     (m.search-recursively trie term matrix results result-map opts)

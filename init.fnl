@@ -53,7 +53,7 @@
 (local xml (require :utils.xml))
 (local input (require :utils.input))
 (local {: geo : notify : ext } (require :api.lawful))
-(local pango xml.create-elements)
+(local pango xml.create-element)
 (local defbroom (require :modules.broom))
 
 (beautiful.init theme)
@@ -391,14 +391,19 @@
      (ext.shellout! "comm -23 <(compgen -c | sort) <(compgen -abdefgjksuv | sort) | sort | uniq")
      "\n"))
   :option-template
-  (fn [content selected?]
-    {:layout wibox.layout.flex.horizontal
-;     1 {:image (icon-loader.load :tabler :grid {:viewBox "0 0 24 24"})
-;        :widget wibox.widget.imagebox}
-     2 {:markup (pango [:span
-                        {:foreground (if selected? "white" "gray")}
-                        content])
-        :widget wibox.widget.textbox}})
+  (fn [content selected? ?hit]
+    (let [hit (or ?hit {:start 0 :end 0})
+          nohit? (= 0 hit.end)
+          pre (if nohit? content (content:sub 1 (- hit.start 1)))
+          mid (if nohit? "" (content:sub hit.start hit.end))
+          suf (if nohit? "" (content:sub (+ 1 hit.end) (length content)))]
+      {:layout wibox.layout.flex.horizontal
+      ;1 {:image (icon-loader.load :tabler :grid {:viewBox "0 0 24 24"})
+      ;:widget wibox.widget.imagebox}
+       2 {:markup (pango :span
+                         {:foreground (if selected? "white" "gray")}
+                         pre [:span {:foreground "red"} mid] suf)
+          :widget wibox.widget.textbox}}))
   :on-return (fn [cmd] (ext.spawn cmd))
   :on-shift-return (fn [cmd] (ext.spawn (.. terminal " -e " cmd)))})
 
