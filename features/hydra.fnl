@@ -42,7 +42,6 @@
 (local input (require "utils.input"))
 (local lume (require "vendor.lume"))
 (local xml (require "utils.xml"))
-(local output (require "utils.output"))
 (local pango xml.create-element)
 
 (fn conf [s] (. (beautiful.get) s))

@@ -24,13 +24,18 @@
 (local dpi xresources.apply_dpi)
 (local wibox (require :wibox))
 (local xml (require :utils.xml))
+(local pango xml.create-element)
 (local hotfuzz (require :utils.hotfuzz))
 (local persistence (require :features.persistence))
 (local input (require :utils.input))
 (local lume (require :vendor.lume))
 
 (local empty-completion-widget
-       {:layout wibox.layout.flex.vertical})
+       {:layout wibox.layout.flex.vertical
+        :spacing (dpi 2)})
+
+(local empty-section-widget
+       {:layout wibox.layout.fixed.horizontal})
 
 (var history {})
 
@@ -51,8 +56,17 @@
                            1 {:forced_height (/ scr.geometry.height 3)
                               :forced_width (/ scr.geometry.width 3)
                               :layout wibox.layout.fixed.vertical
-                              1 (wibox.widget.textbox "")
-                              2 empty-completion-widget}})}))
+                              :spacing (dpi 16)
+                              1 empty-section-widget ; header
+                              2 {:layout wibox.layout.fixed.horizontal
+                                 :spacing (dpi 16)
+                                 1 empty-section-widget ; prompt
+                                 2 (wibox.widget.textbox "")}
+                              3 {:widget wibox.widget.separator
+                                 :thickness 2
+                                 :forced_height 2}
+                              4 empty-completion-widget
+                              5 empty-section-widget}})})) ; footer
 
 (fn broombox-init [scr conf broomkey]
 
@@ -64,7 +78,7 @@
   (set broombox.opt-cache [])
   (set broombox.options [])
 
-  (fn broombox.get-prompt-widget []
+  (fn broombox.get-header-widget []
     (-> broombox
         (. :widget)
         (: :get_children)
@@ -72,13 +86,41 @@
         (: :get_children)
         (. 1)))
 
+  (fn broombox.get-footer-widget []
+    (-> broombox
+        (. :widget)
+        (: :get_children)
+        (. 1)
+        (: :get_children)
+        (. 5)))
+
+  (fn broombox.get-prompt-widget []
+    (-> broombox
+        (. :widget)
+        (: :get_children)
+        (. 1)
+        (: :get_children)
+        (. 2)
+        (: :get_children)
+        (. 1)))
+
+  (fn broombox.get-text-widget []
+    (-> broombox
+        (. :widget)
+        (: :get_children)
+        (. 1)
+        (: :get_children)
+        (. 2)
+        (: :get_children)
+        (. 2)))
+
   (fn broombox.get-completion-widget []
     (-> broombox
         (. :widget)
         (: :get_children)
         (. 1)
         (: :get_children)
-        (. 2)))
+        (. 4)))
 
   (fn broombox.save-history []
     (var hist (or (. history broombox.key) []))
@@ -97,19 +139,48 @@
   (fn broombox.close []
     (broombox.save-history)
     (set broombox.visible false)
-    (tset (broombox.get-prompt-widget) :markup ""))
+    (tset (broombox.get-text-widget) :markup ""))
+
+  (fn broombox.generate-option-markup [content selected? ?hit]
+    (let [hit (or ?hit {:start 0 :end 0})
+          nohit? (= 0 hit.end)
+          pre (if nohit? content (content:sub 1 (- hit.start 1)))
+          mid (if nohit? "" (content:sub hit.start hit.end))
+          suf (if nohit? "" (content:sub (+ 1 hit.end) (length content)))]
+      (pango :span
+             {:foreground (if selected? "white" "gray")}
+             pre [:span {:foreground "red"} mid] suf)))
 
   (fn broombox.template-options []
     (var compl-widget (broombox.get-completion-widget))
     (var widgets [])
     (each [i v (ipairs (lume.slice broombox.options 0 conf.max-displayed))]
       (let [{: value : hit } v
-            selected? (= i broombox.selection)]
+            selected? (= i broombox.selection)
+            markup (broombox.generate-option-markup value selected? hit)]
         (table.insert
          widgets
          i
-         (conf.option-template value selected? hit))))
+         (conf.option-template {:value value
+                                :selected? selected?
+                                :hit hit
+                                :markup markup}))))
     (compl-widget:set_children (concat empty-completion-widget widgets)))
+
+  (fn broombox.render-section [f text w]
+    (let [selection (. broombox.options broombox.selection)
+          contents (match (type f)
+                     "function" (f text selection)
+                     _          {:widget wibox.widget.textbox :markup (or f "")})]
+      (when w
+        (w:set_children (concat empty-section-widget [contents])))))
+
+  (fn broombox.render-sections [text]
+    (let [widgets [{:widget (broombox.get-prompt-widget) :tmpl conf.prompt}
+                   {:widget (broombox.get-header-widget) :tmpl conf.header}
+                   {:widget (broombox.get-footer-widget) :tmpl conf.footer}]]
+      (each [_ {: widget : tmpl} (ipairs widgets)]
+        (broombox.render-section tmpl text widget))))
 
   (fn broombox.filter-options [txt]
     (var compl-widget (broombox.get-completion-widget))
@@ -117,7 +188,7 @@
         (do
           (tset history broombox.key (or (. history broombox.key) []))
           (set broombox.options (lume.map (. history broombox.key) (fn [x] {:value x}))))
-        (let [fuzconf {:threshold .6}
+        (let [fuzconf {:threshold (or conf.threshold 0.6)}
               fuzz (hotfuzz.search broombox.opt-cache txt fuzconf broombox.trie)
               {: trie : results } fuzz
               opts (lume.first results conf.max-displayed)]
@@ -142,10 +213,13 @@ CONF has properties --
 :name
 :key
 :prompt
+:header
+:footer
 :placement
 :option-generator
 :option-template
 :max-displayed
+:threshold
 :on-select
 :on-cancel
 :on-change
@@ -163,11 +237,13 @@ CONF has properties --
         (fn b.run [self]
           (set b.opt-cache (conf.option-generator))
           (b.filter-options)
+          (b.render-sections "")
           (b.open)
           (awful.prompt.run
            {
             :changed_callback
             (fn [cmd]
+              (b.render-sections cmd)
               (b.filter-options cmd))
             :done_callback b.close
             :hooks
@@ -206,8 +282,8 @@ CONF has properties --
                   (set b.selection 1)
                   (string.match key "[a-zA-Z0-9]{1}")
                   (set b.selection 1)))
-            :prompt conf.prompt
-            :textbox (b.get-prompt-widget)}))))
+            :prompt ""
+            :textbox (b.get-text-widget)}))))
 
      (let [category "brooms"
            description conf.name

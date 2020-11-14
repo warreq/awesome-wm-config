@@ -1,6 +1,6 @@
 (local awful (require "awful"))
 (local pa (require "utils.pulseaudio"))
-(local output (require "utils.output"))
+(local {: notify } (require :api.lawful))
 
 (fn get-volume [?callback]
   (let [cb (or ?callback (fn [] nil))]
@@ -34,14 +34,14 @@
   (awful.spawn.with_line_callback pa.volume-listener-script
                                   {
                                    :stdout callback
-                                   :stderr (fn [err] (output.notify err))
+                                   :stderr (fn [err] (notify.error err))
                                    }))
 
 (lambda listen-mic [callback]
   (awful.spawn.with_line_callback pa.mic-listener-script
                                   {
                                    :stdout callback
-                                   :stderr (fn [err] (output.notify err))
+                                   :stderr (fn [err] (notify.error err))
                                    }))
 
 ;; run once on start-up to push out an initial value  

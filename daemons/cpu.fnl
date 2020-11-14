@@ -1,7 +1,6 @@
 (local awful (require "awful"))
 (local gears (require "gears"))
 (local lume (require "vendor.lume"))
-(local output (require "utils.output"))
 
 (local interval 3)
 (local cpu-script

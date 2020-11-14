@@ -1,7 +1,6 @@
 (local awful (require "awful"))
 (local beautiful (require "beautiful"))
 (local lume (require "vendor.lume"))
-(local output (require "utils.output"))
 (local identicon (require "utils.identicon"))
 
 (local tags {})
@@ -32,7 +31,6 @@ Passthrough ?PROPS will merge, overwriting the defaults"
   "Delete TAG"
   (let [name tag.name]
     (: tag :delete)
-    (output.notify (.. "destroyed " tag.name))
     (awesome.emit_signal "tag::deleted" name)))
 
 (lambda tags.get-next [?scr]

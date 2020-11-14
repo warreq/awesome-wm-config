@@ -6,7 +6,7 @@
 
 (local awful (require "awful"))
 (local lume (require "vendor.lume"))
-(local output (require "utils.output"))
+(local {: notify } (require :api.lawful))
 
 (local listen-script "bash -c 'upower --monitor'")
 (local capacity-script "bash -c 'cat /sys/class/power_supply/BAT*/capacity'")
@@ -49,7 +49,7 @@ Returns map with keys :time-to-empty, :state, :time-to-full"
 (lambda listen [callback]
   (awful.spawn.with_line_callback listen-script {
                                                  :stdout callback
-                                                 :stderr (fn [err] (output.notify err))
+                                                 :stderr (fn [err] (notify.error err))
                                                  }))
   
 (listen emit)

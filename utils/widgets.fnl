@@ -1,6 +1,5 @@
 (local awful (require "awful"))
 (local beautiful (require "beautiful"))
-(local output (require "utils.output"))
 
 (local widget-utils {})
 

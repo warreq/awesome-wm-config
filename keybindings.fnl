@@ -9,8 +9,7 @@
 (local tagcmd (require "commands.tag"))
 (local workspacecmd (require "commands.workspace"))
 (local defhydra (require "features.hydra"))
-(local output (require "utils.output"))
-(local notify output.notify)
+(local {: notify} (require :api.lawful))
 
 (local layouts awful.layout.suit)
 
@@ -65,8 +64,8 @@
                   [:G tagcmd.dec-gap "decrease gaps"]]
                  ["Transfer"
                   [:q tagcmd.destroy-current "destroy" {:exit true}] 
-                  [:h (fn [] (output.notify "TODO")) "move to screen left"]
-                  [:l (fn [] (output.notify "TODO")) "move to screen right"]]))
+                  [:h (fn [] (notify.msg "TODO")) "move to screen left"]
+                  [:l (fn [] (notify.msg "TODO")) "move to screen right"]]))
 
 (local
  bindings

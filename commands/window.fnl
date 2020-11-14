@@ -3,7 +3,6 @@
 (local beautiful (require "beautiful"))
 (local xresources (require "beautiful.xresources"))
 (local tagutils (require "utils.tags"))
-(local output (require "utils.output"))
 (local dpi xresources.apply_dpi)
 
 (local default-step 16)

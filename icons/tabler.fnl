@@ -21,4 +21,10 @@
           [:circle {:cx 12 :cy 19 :r 1}]
           [:circle {:cx 19 :cy 19 :r 1}]])
 
+(deficon tabler.terminal
+         [[:path {:stroke :none :fill :none :d "M0 0h24v24H0z"}]
+          [:path {:d "M8 9l3 3l-3 3"}]
+          [:line {:x1 13 :y1 15 :x2 16 :y2 15}]
+          [:rect {:x 3 :y 4 :width 18 :height 16 :rx 2}]])
+
 tabler

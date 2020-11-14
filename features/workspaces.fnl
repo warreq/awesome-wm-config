@@ -2,7 +2,6 @@
 (local lume (require "vendor.lume"))
 (local tag-utils (require "utils.tags"))
 (local screen-utils (require "utils.screens"))
-(local output (require "utils.output"))
 (local persistence (require "features.persistence"))
 
 (local workspaces {})

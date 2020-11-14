@@ -14,8 +14,8 @@
 (local icon-loader (require "icons.loader"))
 (local tabler-icons (require "icons.tabler"))
 (local layout-icons (require "icons.layouts"))
+(local identicon (require "utils.identicon"))
 (import-macros {: async : await } :utils.async)
-;;(local await (require "utils.await"))
 
 ;; Error handling
 ;; Check if awesome encountered an error during startup and fell back to
@@ -42,8 +42,6 @@
 
 (local dpi xresources.apply_dpi)
 
-(local output (require "utils.output"))
-(local notify output.notify)
 (local tag-utils (require "utils.tags"))
 
 (local theme-dir (.. (os.getenv "HOME") "/.config/awesome/themes/"))
@@ -54,14 +52,11 @@
 (local input (require :utils.input))
 (local {: geo : notify : ext } (require :api.lawful))
 (local pango xml.create-element)
-(local defbroom (require :modules.broom))
+(local defbroom (require :features.broom))
 
 (beautiful.init theme)
 
-(local rofi (require "features.rofi"))
-
 (local input (require "utils.input"))
-(local launcher (require "plauncher"))
 (local keybindings (require "keybindings"))
 (local rules (require "rules"))
 (local persistence (require "features.persistence"))
@@ -94,9 +89,6 @@
 (local mymainmenu (awful.menu {:items [
                                         [ "awesome" myawesomemenu beautiful.awesome_icon ]
                                         [ "open terminal" terminal ]]}))
-
-(global mylauncher (awful.widget.launcher {:image (icon-loader.load :tabler :grid {:viewBox "0 0 24 24"})
-                                           :menu mymainmenu }))
 
 (global launchbutton
         (widget-utils.buttonize
@@ -382,27 +374,49 @@
  {
   :name "applauncher"
   :key [[:mod] :a]
-  :prompt "Run: "
+  :prompt (fn [text selection] {:widget wibox.widget.imagebox
+                                :forced_height 38
+                                :forced_width 38
+                                :image (icon-loader.load :tabler :terminal)})
   :placement geo.centered
-  :max-displayed 20
+  :max-displayed 13
   :option-generator
-  (fn []
-    (lume.split
-     (ext.shellout! "comm -23 <(compgen -c | sort) <(compgen -abdefgjksuv | sort) | sort | uniq")
-     "\n"))
+  (lume.memoize
+   (fn []
+     (lume.split
+      (ext.shellout! "comm -23 <(compgen -c | sort) <(compgen -abdefgjksuv | sort) | sort | uniq")
+      "\n")))
   :option-template
-  (fn [content selected? ?hit]
-    (let [hit (or ?hit {:start 0 :end 0})
-          nohit? (= 0 hit.end)
-          pre (if nohit? content (content:sub 1 (- hit.start 1)))
-          mid (if nohit? "" (content:sub hit.start hit.end))
-          suf (if nohit? "" (content:sub (+ 1 hit.end) (length content)))]
-      {:layout wibox.layout.flex.horizontal
-      ;1 {:image (icon-loader.load :tabler :grid {:viewBox "0 0 24 24"})
-      ;:widget wibox.widget.imagebox}
-       2 {:markup (pango :span
-                         {:foreground (if selected? "white" "gray")}
-                         pre [:span {:foreground "red"} mid] suf)
+  (fn [option]
+    (let [{: markup } option]
+      {:markup markup
+       :widget wibox.widget.textbox}))
+  :on-return (fn [cmd] (ext.spawn cmd))
+  :on-shift-return (fn [cmd] (ext.spawn (.. terminal " -e " cmd)))})
+
+(defbroom
+ {
+  :name "workspaces"
+  :key [[:mod] :period]
+  :header (pango :span {:weight :heavy :size :x-large } "Switch workspace")
+  :prompt (fn [text selection] {:widget wibox.widget.imagebox
+                                :forced_height 38
+                                :forced_width 38
+                                :image (identicon.create (or text "") 7 32)})
+  :placement geo.centered
+  :threshold 0.0
+  :max-displayed 12
+  :option-generator (fn [] ["tekportal" "puma" "hsm" "shtwm" "world-domination"])
+  :option-template
+  (fn [option]
+    (let [{: value : markup} option]
+      {:layout wibox.layout.fixed.horizontal
+       :spacing (dpi 16)
+       1 {:image (identicon.create (or value "default") 7 32)
+          :forced_height 38
+          :forced_width 38
+          :widget wibox.widget.imagebox}
+       2 {:markup markup
           :widget wibox.widget.textbox}}))
   :on-return (fn [cmd] (ext.spawn cmd))
   :on-shift-return (fn [cmd] (ext.spawn (.. terminal " -e " cmd)))})

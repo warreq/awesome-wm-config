@@ -5,7 +5,6 @@
 (local dpi xresources.apply_dpi)
 (local lume (require "vendor.lume"))
 (local tags (require "utils.tags"))
-(local output (require "utils.output"))
 
 (local gap-step 4)
 
