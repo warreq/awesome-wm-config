@@ -143,7 +143,7 @@
 
   (fn broombox.generate-option-markup [content selected? ?hit]
     (let [hit (or ?hit {:start 0 :end 0})
-          nohit? (= 0 hit.end)
+          nohit? (and (= 0 hit.start) (= 0 hit.end))
           pre (if nohit? content (content:sub 1 (- hit.start 1)))
           mid (if nohit? "" (content:sub hit.start hit.end))
           suf (if nohit? "" (content:sub (+ 1 hit.end) (length content)))]

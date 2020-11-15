@@ -7,7 +7,6 @@
 (local pa (require "utils.pulseaudio"))
 (local wincmd (require "commands.window"))
 (local tagcmd (require "commands.tag"))
-(local workspacecmd (require "commands.workspace"))
 (local defhydra (require "features.hydra"))
 (local {: notify} (require :api.lawful))
 
@@ -103,11 +102,6 @@
     [[:mod :shift] :h tagcmd.go-left "switch to previous tag"]
     )
    tag-hydra
-
-   (input.key-group
-    "workspaces"
-    [[:mod] :n workspacecmd.prompt "create workspace"]
-    )
 
    (input.key-group
     "client"

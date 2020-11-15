@@ -99,7 +99,7 @@ normalized way."
             (when (> start 1)
               (when (>= (. row start) (. row (- start 1)))
                 (set start (- start 1))))))
-        {:start (- start 1)
+        {:start (if (= start 1) 2 (- start 1))
          :end (- score-idx 1)})))
 
 (fn m.search-recursively [trie term matrix results result-map opts]

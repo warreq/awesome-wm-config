@@ -73,9 +73,24 @@
         results (. (hotfuzz.search search-candidates "witch") :results)
         broom-hit (-> results (lume.filter (fn [x] (= x.value "witch's broom"))) (lume.first))
         moon-hit (-> results (lume.filter (fn [x] (= x.value "moon-witch"))) (lume.first))]
-    (t.assert_equal 6 moon-hit.hit.start)
-    (t.assert_equal 10 moon-hit.hit.end)
-    (t.assert_equal 1 broom-hit.hit.start)
-    (t.assert_equal 5 broom-hit.hit.end)))
+    (t.assert_equal "witch" (string.sub "moon-witch" moon-hit.hit.start moon-hit.hit.end))
+    (t.assert_equal "witch" (string.sub "witch's broom" broom-hit.hit.start broom-hit.hit.end))))
+
+(fn m.test-search-hit-single-char []
+  "result should return a hit that gives offset and length of the match, no off-by-one errors"
+  (let [search-candidates ["awesome" "something" "default" "set" "ime" "ton"]
+        results (. (hotfuzz.search search-candidates "some" {:threshold 0.0}) :results)
+        awesome-hit (-> results (lume.filter (fn [x] (= x.value "awesome"))) (lume.first))
+        set-hit (-> results (lume.filter (fn [x] (= x.value "set"))) (lume.first))
+        ime-hit (-> results (lume.filter (fn [x] (= x.value "ime"))) (lume.first))
+        ton-hit (-> results (lume.filter (fn [x] (= x.value "ton"))) (lume.first))
+        something-hit (-> results (lume.filter (fn [x] (= x.value "something"))) (lume.first))
+        default-hit (-> results (lume.filter (fn [x] (= x.value "default"))) (lume.first))]
+    (t.assert_equal "some" (string.sub "something" something-hit.hit.start something-hit.hit.end))
+    (t.assert_equal "some" (string.sub "awesome" awesome-hit.hit.start awesome-hit.hit.end))
+    (t.assert_equal "me" (string.sub "ime" ime-hit.hit.start ime-hit.hit.end))
+    (t.assert_equal "e" (string.sub "set" set-hit.hit.start set-hit.hit.end))
+    (t.assert_equal "o" (string.sub "ton" ton-hit.hit.start ton-hit.hit.end))
+    (t.assert_equal "e" (string.sub "default" default-hit.hit.start default-hit.hit.end))))
 
 m
