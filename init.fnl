@@ -406,7 +406,7 @@
   :placement geo.centered
   :threshold 0.0
   :max-displayed 12
-  :option-generator (fn [] ["tekportal" "puma" "hsm" "shtwm" "world-domination"])
+  :option-generator (fn [] (workspaces.list))
   :option-template
   (fn [option]
     (let [{: value : markup} option]
@@ -418,8 +418,8 @@
           :widget wibox.widget.imagebox}
        2 {:markup markup
           :widget wibox.widget.textbox}}))
-  :on-return (fn [cmd] (ext.spawn cmd))
-  :on-shift-return (fn [cmd] (ext.spawn (.. terminal " -e " cmd)))})
+  :on-return (fn [cmd] (doto cmd (workspaces.create) (workspaces.apply)))
+  :on-shift-return (fn [_ txt] (doto txt (workspaces.create) (workspaces.apply)))})
 
 (awesome.connect_signal
  :startup

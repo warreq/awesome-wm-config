@@ -254,7 +254,7 @@ CONF has properties --
                              (-> b.options (. b.selection) (. :value))
                              cmd
                              "")]
-                  (conf.on-return value)
+                  (conf.on-return value cmd)
                   (b.close)))]
              [[:Shift] :Return
               (fn [cmd]
@@ -264,7 +264,7 @@ CONF has properties --
                              "")
                       ;; fire on-return if no on-shift-return
                       handler (or conf.on-shift-return conf.on-return)]
-                  (handler value)
+                  (handler value cmd)
                   (b.close)))]]
             :keypressed_callback
             (fn [mod key cmd]

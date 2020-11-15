@@ -16,6 +16,10 @@
   (let [name (or ?name workspaces.current)]
     (. workspaces.map name)))
 
+(fn workspaces.list []
+  "List active workspaces"
+  (lume.keys workspaces.map))
+
 (lambda workspaces.create [name]
   "Create a new workspace with name NAME, if it does not already exist"
   (when (not (workspaces.get name))
