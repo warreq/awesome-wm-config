@@ -137,7 +137,6 @@
     (set broombox.ontop true))
 
   (fn broombox.close []
-    (broombox.save-history)
     (set broombox.visible false)
     (tset (broombox.get-text-widget) :markup ""))
 
@@ -255,6 +254,7 @@ CONF has properties --
                              cmd
                              "")]
                   (conf.on-return value cmd)
+                  (b.save-history)
                   (b.close)))]
              [[:Shift] :Return
               (fn [cmd]
@@ -265,6 +265,7 @@ CONF has properties --
                       ;; fire on-return if no on-shift-return
                       handler (or conf.on-shift-return conf.on-return)]
                   (handler value cmd)
+                  (b.save-history)
                   (b.close)))]]
             :keypressed_callback
             (fn [mod key cmd]
