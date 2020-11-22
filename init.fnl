@@ -92,9 +92,14 @@
 
 (global launchbutton
         (widget-utils.buttonize
-         (wibox.widget {:widget wibox.widget.imagebox
-                        :image (icon-loader.load :tabler :grid {:viewBox "0 0 24 24"})})
-                        ;:image (icon-loader.load :tabler :grid {:viewBox "0 0 24 24"})})
+         (wibox.widget
+          {:widget wibox.container.margin
+           :right (dpi 4)
+           :top (dpi 4)
+           :bottom (dpi 4)
+           :left (dpi 16)
+           1 {:widget wibox.widget.imagebox
+              :image (icon-loader.load :tabler :grid {:viewBox "0 0 24 24"})}})
          (fn [] (: mymainmenu :toggle))))
 
 ;; Menubar configuration
@@ -262,6 +267,7 @@
                         :layout wibox.layout.align.horizontal
                         (/< ;; Left widgets
                          :layout wibox.layout.fixed.horizontal
+                         :spacing 10
                          launchbutton
                          (/<
                           :widget wibox.container.margin
@@ -271,6 +277,7 @@
                         s.mytasklist ;; Middle widget
                         (/< ;; Right widgets
                          :layout wibox.layout.fixed.horizontal
+                         :spacing 10
                          (wibox.widget.systray)
                          s.my-textclock
                          s.mylayoutbox)))))
@@ -402,7 +409,7 @@
   :prompt (fn [text selection] {:widget wibox.widget.imagebox
                                 :forced_height 38
                                 :forced_width 38
-                                :image (identicon.create (or text "") 7 32)})
+                                :image (workspaces.get-icon text)})
   :placement geo.centered
   :threshold 0.0
   :max-displayed 12
@@ -412,7 +419,7 @@
     (let [{: value : markup} option]
       {:layout wibox.layout.fixed.horizontal
        :spacing (dpi 16)
-       1 {:image (identicon.create (or value "default") 7 32)
+       1 {:image (workspaces.get-icon value)
           :forced_height 38
           :forced_width 38
           :widget wibox.widget.imagebox}

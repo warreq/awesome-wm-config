@@ -2,6 +2,8 @@
 (local lume (require "vendor.lume"))
 (local tag-utils (require "utils.tags"))
 (local screen-utils (require "utils.screens"))
+(local identicon (require "utils.identicon"))
+(local user (require "user"))
 (local persistence (require "features.persistence"))
 
 (local workspaces {})
@@ -15,6 +17,12 @@
   "Get the current workspace, or the workspace with name ?NAME"
   (let [name (or ?name workspaces.current)]
     (. workspaces.map name)))
+
+(fn workspaces.get-icon [name]
+  "Get the icon for workspace with NAME"
+  (if (= name :default)
+      user.avatar
+      (identicon.create name 7 32)))
 
 (fn workspaces.list []
   "List active workspaces"

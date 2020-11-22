@@ -19,7 +19,7 @@
          :shape-rendering shape-rendering#
          :height height#
          :width width#
-         :viewBox (.. "0 0 " height# " " width#)
+         :viewBox (or viewBox# (.. "0 0 " height# " " width#))
          :stroke-width stroke-width#
          :stroke stroke-color#
          :stroke-linecap stroke-linecap#
