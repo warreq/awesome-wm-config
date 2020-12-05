@@ -48,7 +48,8 @@
 (lambda lawful.ext.spawn [cmd ?props ?cb]
   "Spawn application with CMD and set PROPS on resulting client.
 Execute callback ?CB if provided, passing the client as the only argument."
-  (let [(pid snid) (awesome.spawn cmd true)]
+  ;; launch everything through an interactive bash so aliases can resolve
+  (let [(pid snid) (awesome.spawn (.. "bash -ic " cmd) true)]
     (when snid
       (tset lawful.ext.spawnbuf snid [(or ?props {}) ?cb]))
     (values pid snid)))
