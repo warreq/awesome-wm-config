@@ -4,6 +4,7 @@
 (local xresources (require "beautiful.xresources"))
 (local tagutils (require "utils.tags"))
 (local dpi xresources.apply_dpi)
+(local { : notify } (require :api.lawful))
 
 (local default-step 16)
 
@@ -164,7 +165,9 @@
 (fn wincmd.close [win]
   "Kill WIN or currently focused client"
   (let [c (or win client.focus)]
-    (: c :kill)))
+    (if c
+        (: c :kill)
+        (notify.info "Nothin' to kill."))))
 
 (fn wincmd.cycle-clockwise []
   "Cycle the tiled clients in current tag clockwise"

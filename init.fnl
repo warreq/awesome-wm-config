@@ -1,5 +1,4 @@
 (local widget-utils (require "utils.widgets"))
-(local view (require "fennelview"))
 (local gears (require "gears"))
 (local awful (require "awful"))
 (require "awful.autofocus")
@@ -38,6 +37,9 @@
        (naughty.notify {:preset err_preset
                         :title "Oops, an error happened!"
                         :text (tostring err)})
+       (naughty.notify {:preset err_preset
+                        :title "Oops, an error happened!"
+                        :text (tostring err)})
        (set in_error false)))))
 
 (local dpi xresources.apply_dpi)
@@ -69,6 +71,7 @@
 (require "daemons.cpu")
 (require "daemons.ram")
 (require "daemons.pulseaudio")
+(require "daemons.workspace-env")
 
 ;; Variable definitions
 
@@ -388,11 +391,10 @@
   :placement geo.centered
   :max-displayed 13
   :option-generator
-  (lume.memoize
-   (fn []
-     (lume.split
-      (ext.shellout! "comm -23 <(compgen -c | sort) <(compgen -abdefgjksuv | sort) | sort | uniq")
-      "\n")))
+  (fn []
+    (lume.split
+     (ext.shellout! "bash -i -c 'compgen -ac | sort | uniq'")
+     "\n"))
   :option-template
   (fn [option]
     (let [{: markup } option]

@@ -9,7 +9,17 @@
 
 (var lawful {:ext {}
              :geo awful.placement ;; passthrough
+             :fs {}
              :notify {}})
+
+(fn lawful.fs.home-dir []
+  (os.getenv "HOME"))
+
+(lambda lawful.fs.cache-dir []
+  (.. (lawful.fs.home-dir) "/.cache/awesome/"))
+
+(lambda lawful.fs.icon-dir []
+  (.. (lawful.fs.home-dir) "/.cache/awesome/icons/"))
 
 (lambda lawful.notify.msg [?message ?args]
   (let [args (or ?args {})

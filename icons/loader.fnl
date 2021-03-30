@@ -1,10 +1,10 @@
-(local awful (require "awful"))
 (local json (require "vendor.json"))
 (local oleander (require "utils.oleander"))
+(local {: notify : ext : fs } (require :api.lawful))
 
 (local icon-loader {})
 
-(set icon-loader.cachedir (.. (awful.util.get_cache_dir) "/icons/"))
+(set icon-loader.cachedir (fs.icon-dir))
 (tset icon-loader :initialized false)
 
 (lambda loader [module name ?options]
@@ -23,13 +23,12 @@
 
 (lambda icon-loader.load [module name ?options]
   (when (not icon-loader.initialized)
-    (awful.spawn.with_shell (.. "mkdir " icon-loader.cachedir " || true"))
+    (ext.shellout (.. "mkdir " icon-loader.cachedir " || true"))
     (tset icon-loader :initialized true))
   (loader module name ?options))
 
 (fn icon-loader.clear-cache []
-  (awful.spawn.with_shell (.. "rm " icon-loader.cachedir "*.svg")
-                          true
-                          (fn [] (tset icon-loader :initialized false))))
+  (ext.shellout (.. "rm " icon-loader.cachedir "*.svg"))
+  (tset icon-loader :initialized false))
 
 icon-loader

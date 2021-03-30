@@ -1,5 +1,3 @@
-(local xml (require "utils.xml"))
-
 (local icon-macros {})
 
 (fn icon-macros.deficon [name tbl-def]
